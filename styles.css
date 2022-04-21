@@ -1,0 +1,214 @@
+@font-face {
+	font-family: 'Montserrat';
+    src: url('/fonts/montserrat/Montserrat-SemiBold.ttf');
+    font-weight: 600;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Montserrat';
+    src: url('/fonts/montserrat/Montserrat-Medium.ttf');
+    font-weight: 500;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Montserrat';
+    src: url('/fonts/montserrat/Montserrat-Regular.ttf');
+    font-weight: 400;
+    font-style: normal;
+}
+.marketpapa-wrapper {
+	font-family: 'Montserrat', sans-serif;
+	line-height: 12px;
+	font-size: 10px;
+	color: #222;
+	font-weight: 400;
+	background: #F8F6FA;
+	border-radius: 4px;
+	/*padding: 12px 24px 24px;*/
+	padding: 12px;
+	width: 304px;
+    margin-bottom: 15px;
+}
+.marketpapa-wrapper a {
+	color: #6000C0;
+	text-decoration: none;
+}
+.marketpapa-wrapper .marketpapa-button {
+	font-family: 'Montserrat', sans-serif;
+	line-height: 15px;
+	font-size: 12px;
+	font-weight: 500;
+	background: #6000C0;
+	border: 1px solid #6000C0;
+	border-radius: 4px;
+	padding: 1px 7px;
+	color: #F2F3F6;
+	text-align: center;
+	cursor: pointer;
+}
+.marketpapa-wrapper .marketpapa-button-outline {
+	background: transparent;
+	color: #222;
+}
+.marketpapa-header {
+	padding-bottom: 8px;
+	border-bottom: 1px solid #e7e7e8;
+}
+.marketpapa-content {
+	padding-top: 10px;
+	padding-bottom: 8px;
+}
+.marketpapa-footer {
+	padding-top: 8px;
+	border-top: 1px solid #e7e7e8;
+}
+.marketpapa-wrapper .marketpapa-button-detail {
+	padding-top: 10px;
+	padding-bottom: 10px;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 20px;
+	display: block;
+	width: 100%;
+	/*margin-top: 24px;*/
+	margin-top: 12px;
+	border: none;
+	background: linear-gradient(90deg, #6000C0 16.96%, #A900A2 113.75%);
+}
+.marketpapa-buttons {
+	/*margin-top: 4px;*/
+}
+.marketpapa-buttons .marketpapa-button {
+	margin-right: 4px;
+}
+.marketpapa-footer-link {
+	margin-bottom: 4px;
+	font-size: 13px;
+	line-height: 16px;
+}
+.marketpapa-chart-filters {
+	display: flex;
+	margin: 0 -4px;
+}
+.marketpapa-chart-filter-item {
+	text-align: center;
+	margin-bottom: 8px;
+	padding: 0 4px 3px;
+	flex-grow: 1;
+	position: relative;
+	cursor: pointer;
+}
+.marketpapa-chart-filter {
+	padding: 3px 4px;
+	border-radius: 4px;
+	border: 1px solid #E7E7E8;
+	color: #606569;
+}
+.marketpapa-chart-filter::after {
+	content: '';
+	position: absolute;
+	left: 4px;
+	right: 4px;
+	bottom: 0;
+	height: 1px;
+	background: rgba(96, 0, 192, 0.3);
+	border-radius: 1px;
+}
+
+.marketpapa-filter-revenue {
+	background: rgba(61, 191, 155, 0.1);
+	border-color: #E5F0F1;
+}
+.marketpapa-filter-revenue.marketpapa-filter-active {
+	background: rgba(61, 191, 155, 0.5);
+	border-color: #9BDBCB;
+}
+.marketpapa-filter-sales {
+	background: rgba(233, 106, 135, 0.1);
+	border-color: #F7E8EF;
+}
+.marketpapa-filter-sales.marketpapa-filter-active {
+	background: rgba(233, 106, 135, 0.5);
+	border-color: #F1B0C1;
+}
+.marketpapa-filter-sales-rate {
+	border-color: #E7E7E8;
+}
+.marketpapa-filter-sales-rate.marketpapa-filter-active {
+}
+.marketpapa-filter-lost-revenue {
+	background: rgba(225, 159, 82, 0.1);
+	border-color: #F6EDE9;
+}
+.marketpapa-filter-lost-revenue.marketpapa-filter-active {
+	background: rgba(225, 159, 82, 0.5);
+	border-color: #EDCBA6;
+}
+.marketpapa-filter-orders {
+	background: rgba(253, 222, 59, 0.1);
+	border-color: #F9F4E7;
+}
+.marketpapa-filter-orders.marketpapa-filter-active {
+	background: rgba(253, 222, 59, 0.5);
+	border-color: #FBEA9B;
+}
+.marketpapa-filter-last-qty {
+	background: rgba(97, 112, 255, 0.1);
+	border-color: #E9E8FB;
+}
+.marketpapa-filter-last-qty.marketpapa-filter-active {
+	background: rgba(97, 112, 255, 0.5);
+	border-color: #ADB3FD;
+}
+.marketpapa-filter-price {
+	background: rgba(199, 39, 255, 0.1);
+	border-color: #F3E1FB;
+}
+.marketpapa-filter-price.marketpapa-filter-active {
+	background: rgba(199, 39, 255, 0.5);
+	border-color: #E08FFD;
+}
+
+.marketpapa-chart-filter.marketpapa-filter-active {
+	color: #222;
+}
+.marketpapa-chart-filter.marketpapa-filter-sales-rate {
+	color: #222;
+	cursor: default;
+}
+.marketpapa-chart-filter.marketpapa-filter-active::after {
+	background: #6000C0;
+}
+.marketpapa-chart-filter.marketpapa-filter-sales-rate::after {
+	display: none;
+}
+.marketpapa-chart-filter-title {
+	font-weight: 500;
+	font-size: 13px;
+	line-height: 16px;
+	white-space: nowrap;
+}
+.marketpapa-chart-filter-value {
+	font-weight: 600;
+	font-size: 16px;
+	line-height: 20px;
+	white-space: nowrap;
+}
+.marketpapa-chart-filter.marketpapa-filter-price {
+    display: flex;
+    justify-content: center;
+}
+.marketpapa-chart-filter.marketpapa-filter-price .marketpapa-chart-filter-title {
+    padding-top: 2px;
+}
+.marketpapa-chart-filter.marketpapa-filter-price .marketpapa-chart-filter-value {
+    border-left: 1px solid #BABCBF;
+    padding-left: 10px;
+    margin-left: 10px;
+    line-height: 19px;
+    padding-top: 1px;
+}
+.marketpapa-chart {
+	min-height: 12px;
+	margin: 0 -8px;
+}
