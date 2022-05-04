@@ -347,6 +347,7 @@
         chartOptions.series = [ revenueChart.series ];
 
         parsedData = {
+            ready: true,
             amountFbo: amountFbo,// parseInt(amountFbo / 100) + ' ₽',
             realSalesFbo: realSalesFbo,//realSalesFbo + ' шт',
             realSalesRateFbo: realSalesRateFbo,//Math.round(realSalesRateFbo),
@@ -399,7 +400,7 @@
         })
     }
 
-    function fetchData() {
+    function fetchData(callback) {
         fetch(new Request('https://api.marketpapa.ru/api/plugin/item/data/' + productId, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -407,21 +408,41 @@
         }))
         .then(res => res.json())
         .then(res => {
-            dataObj = { ...res };
-            onMarketPapaDataReceived();
-            fetchInfo();
+            callback(res);
         })
         .catch(error => {})
     }
 
-    function getToken() {
+    function getToken(callback) {
         fetch(new Request('https://api.marketpapa.ru/api/plugin/get_token'))
         .then(res => res.json())
         .then(res => {
             token = res.token;
-            fetchData();
+            fetchData(callback);
         })
         .catch(error => {})
+    }
+
+    function calcCatalogItemData(res) {
+        var info = {
+            amount: 0,
+            real_sales: 0,
+            last_qty: 0
+        };
+        var last_qty;
+        // цикл по размерам
+        Object.entries(res).forEach(function([key, value]) {
+            // цикл по датам
+            last_qty = 0;
+            value.data.map(function(item) {
+                info.amount += item.amount_fbo;
+                info.real_sales += item.real_sales_fbo;
+                last_qty = item.last_qty_fbo;
+                return item;
+            })
+            info.last_qty += last_qty
+        })
+        return info;
     }
 
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
@@ -429,10 +450,22 @@
             case 'init_mp':
                 productId = request.id;
                 _sendResponse = sendResponse;
-                getToken();
+                getToken(function(res) {
+                    dataObj = { ...res };
+                    onMarketPapaDataReceived();
+                    fetchInfo();
+                });
                 return true;
                 break;
             default: break;
+        }
+        if (request.msg.indexOf('get_catalog_item') == 0) {
+            productId = request.id;
+            // if (parseInt(productId) == 17397807)
+                getToken(function(res) {
+                    sendResponse(calcCatalogItemData(res));
+                });
+            return true;
         }
     });
 })();

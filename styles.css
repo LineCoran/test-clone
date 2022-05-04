@@ -212,3 +212,43 @@
 	min-height: 12px;
 	margin: 0 -8px;
 }
+
+
+.marketpapa-catalog-widget {
+	font-family: 'Montserrat', sans-serif;
+	line-height: 19px;
+	font-weight: 600;
+	font-size: 13px;
+	color: #222;
+	background: #F8F6FA;
+	border-radius: 4px;
+	padding: 12px;
+	margin-top: 15px;
+}
+.marketpapa-catalog-item {
+	display: flex;
+	align-items: center;
+}
+.marketpapa-catalog-item-info {
+	border-left: 2px solid #babcbf;
+	padding-left: 12px;
+	margin-left: 12px;
+	flex-grow: 1;
+}
+.marketpapa-catalog-info-line {
+	display: flex;
+	justify-content: space-between;
+}
+.marketpapa-catalog-info-line + .marketpapa-catalog-info-line {
+	margin-top: 4px;
+}
+.marketpapa-catalog-info-line > span:first-child {
+	color: #606569;
+	padding-right: 12px;
+}
+.marketpapa-catalog-info-line > span:last-child {
+	text-align: right;
+}
+.marketpapa-catalog-logo {
+	height: 30px;
+}
