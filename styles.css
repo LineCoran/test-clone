@@ -29,6 +29,12 @@
 	width: 304px;
     margin-bottom: 15px;
 }
+.marketpapa-widget-auth .marketpapa-wrapper {
+    background-size: 100% auto;
+    background-repeat: no-repeat;
+    background-position: 0 67px;
+    min-height: 425px;
+}
 .marketpapa-wrapper a {
 	color: #6000C0;
 	text-decoration: none;
@@ -62,7 +68,7 @@
 	padding-top: 8px;
 	border-top: 1px solid #e7e7e8;
 }
-.marketpapa-wrapper .marketpapa-button-detail {
+.marketpapa-wrapper .marketpapa-button-primary {
 	padding-top: 10px;
 	padding-bottom: 10px;
 	font-weight: 700;
@@ -251,4 +257,25 @@
 }
 .marketpapa-catalog-logo {
 	height: 30px;
+}
+.marketpapa-auth-text {
+	font-weight: 600;
+	font-size: 14px;
+	line-height: 22px;
+	text-align: center;
+    margin: 50px 0;
+}
+.marketpapa-auth-input {
+    display: block;
+    width: 100%;
+    margin-bottom: 12px;
+    line-height: 20px;
+    padding: 9px 15px;
+    border: 1px solid #f2f3f6;
+    border-radius: 4px;
+    font-size: 12px;
+    background: rgba(255,255,255,.8);
+}
+.marketpapa-auth-form {
+	margin-bottom: 30px;
 }

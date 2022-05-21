@@ -19,7 +19,7 @@
 	],
 	"web_accessible_resources": [
 		{
-			"resources": [ "/images/logo.svg" ],
+			"resources": [ "/images/*" ],
 			"matches": [ "https://www.wildberries.ru/*" ]
 		},
 		{

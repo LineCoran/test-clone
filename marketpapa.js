@@ -128,7 +128,7 @@ function initTemplate(productId, preview, target, mpData) {
 
 	function mpFooterTemplate() {
 		if (!mpData) return '';
-		console.log(mpData)
+		// console.log(mpData)
 		var brandLink = !mpData.hasOwnProperty('brandName') ?
 			'https://marketpapa.ru/find'
 			: 'https://marketpapa.ru/brand?brand_name=' + encodeURIComponent(mpData.brandName);
@@ -143,7 +143,7 @@ function initTemplate(productId, preview, target, mpData) {
 				<div class="marketpapa-footer-link">
 					<a href="` + supplierLink + `" target="_blank">Аналитика по поставщику</a>
 				</div>
-				<a href="https://marketpapa.ru/item/` + productId + `" target="_blank" class="marketpapa-button marketpapa-button-detail">
+				<a href="https://marketpapa.ru/item/` + productId + `" target="_blank" class="marketpapa-button marketpapa-button-primary">
 					Подробная аналитика
 				</a>
 			</div>
@@ -278,7 +278,7 @@ function initTemplate(productId, preview, target, mpData) {
 		getChartFilters();
 	}
 
-
+/*
 	var div = document.createElement("div");
 	console.log(preview)
 	div.setAttribute("id", "marketpapa-widget" + preview);
@@ -286,6 +286,10 @@ function initTemplate(productId, preview, target, mpData) {
 	div.innerHTML = marketPapaTemplate();
 
 	target.prepend(div);
+*/
+	target.innerHTML = marketPapaTemplate();
+
+
 
 	setChartFilterListeners();
 
@@ -293,7 +297,7 @@ function initTemplate(productId, preview, target, mpData) {
 		item.addEventListener('click', function(event) { onPeriodFilterClick(event, item); });
 	});
 
-	console.log(document.querySelectorAll('.marketpapa-wrapper'));
+	// console.log(document.querySelectorAll('.marketpapa-wrapper'));
 
 	document.getElementById("marketpapa-logo" + preview).setAttribute('src', logoSrc);
 
@@ -327,7 +331,7 @@ function _initCatalog(id) {
 
 	var targetDiv = document.getElementById('marketpapa-catalog-widget-' + id);
 	if (targetDiv && targetDiv.length > 0) {
-		console.log(targetDiv);
+		// console.log(targetDiv);
 		targetDiv.remove();
 		// document.getElementById('marketpapa-catalog-widget-' + id).innerHTML = '';
 	}
@@ -335,13 +339,21 @@ function _initCatalog(id) {
 	card[0].append(div);
 }
 
+var authToken = '', accessToken = '';
+
 function initCatalog(id) {
+	// console.log('get_catalog_item ' + id);
 	// get_catalog_item
 
-	chrome.runtime.sendMessage({ msg: 'get_catalog_item_'+id, id: id }, function(response) {
-		console.log('get_catalog_item ' + id, response);
+	chrome.runtime.sendMessage({
+		msg: 'get_catalog_item_' + id,
+		id: id,
+		authToken: authToken,
+		accessToken: accessToken
+	}, function(response) {
+		// console.log('get_catalog_item ' + id, response);
 		// _initCatalog(id);
-
+		/*
 		var initInterval = setInterval(function() {
 			// clearInterval(initInterval);
 			if (!document.getElementById('marketpapa-catalog-widget-' + id)) {
@@ -349,7 +361,7 @@ function initCatalog(id) {
 				_initCatalog(id);
 				document.getElementById('marketpapa-catalog-widget-' + id).innerHTML = initCatalogTemplate(response);
 			}
-		}, 300);
+		}, 300);*/
 	});
 /*
 	_initCatalog(id);
@@ -362,19 +374,47 @@ function initCatalog(id) {
 	}, 1000);*/
 }
 
-function initMP(productId, preview, target) {
-	// mpData = false;
-	// period = 'month';
-	// filters = ['revenue'];
-	// console.log(preview)
-	if (document.getElementsByClassName('marketpapa-widget' + preview).length > 0)
-		document.getElementsByClassName('marketpapa-widget' + preview)[0].innerHTML = '';
+// console.log(document.cookie);
+
+function getCookie(name) {
+	const value = '; ' + document.cookie;
+	const parts = value.split('; ' + name + '=');
+	var cookie = '';
+	if (parts.length === 2)
+		cookie = parts.pop().split(';').shift();
+	return cookie;
+}
+
+function isAuth() {
+	var _token = getCookie('marketPapaToken');
+	authToken = _token;
+
+	return _token.trim() != '';
+}
+
+function isAccessTokenExists() {
+	var _accessToken = getCookie('marketPapaAccessToken');
+	accessToken = _accessToken;
+	return _accessToken.trim() != '';
+}
+
+function getData(target, id) {
+	// console.log('getData', id, target);
 	
-	chrome.runtime.sendMessage({ msg: 'init_mp', id: productId }, function(response) {
-		console.log(response);
+	chrome.runtime.sendMessage({
+		msg: 'init_mp',
+		id: id,
+		authToken: authToken,
+		accessToken: accessToken
+	}, function(response) {
+		// console.log(response);
 		if (!response.ready) return false;
 
-		if (target) {
+		var _target = document.getElementById('marketpapa-widget-' + id);
+		if (_target) {
+			initTemplate(id, '', _target, response);
+		}
+		/*if (target) {
 			initTemplate(productId, preview, target, response);
 		} else {
 			var initInterval = setInterval(function() {
@@ -386,16 +426,186 @@ function initMP(productId, preview, target) {
 					initTemplate(productId, preview, target, response);
 				}
 			}, 1000);
-		}
-
-
+		}*/
 	});
 }
 
-function initPreviewMP(id) {
-	var initTarget = document.querySelectorAll('.j-product-popup .same-part-kt__delivery-advantages');
-	if (initTarget.length === 0) return false;
-	initMP(id, '-popup', initTarget[0]);
+function getToken(callback) {
+	chrome.runtime.sendMessage({ msg: 'get_token' }, function(response) {
+		accessToken = response;
+    	document.cookie = "marketPapaAccessToken=" + response;
+    	// console.log('getToken');
+		callback();
+	});
+}
+
+function checkAccess(target, id) {
+	if (isAuth()) {
+		if (isAccessTokenExists()) {
+			// console.log('ALL READY')
+			// get data and render
+			getData(target, id);
+		} else {
+			// console.log('NO TOKEN')
+			getToken(function() { getData(target, id); });
+
+			// get data and render
+		}
+	} else {
+		// console.log('NOT AUTH')
+		// render login
+	}
+}
+
+function auth(id, phone, password) {
+	chrome.runtime.sendMessage({
+		msg: 'auth',
+		phone: phone,
+		password: password
+	}, function(response) {
+		// console.log(response);
+		authToken = response;
+    	document.cookie = "marketPapaToken=" + response;
+		getToken(function() { getData(false, id); });
+	});
+}
+
+function getAuthTpl(productId) {
+	return `
+		<div class="marketpapa-wrapper">
+			<div class="marketpapa-header">
+				<img id="marketpapa-logo-`+productId+`" src="" />
+			</div>
+			<div class="marketpapa-auth-text">
+				Для получения доступа к данным<br />
+				необходимо войти в аккаунт<br />
+				Market Papa 
+			</div>
+			<div class="marketpapa-auth-form">
+				<input type="text" name="phone" placeholder="Номер телефона" class="marketpapa-auth-input" />
+				<input type="password" name="password" placeholder="Пароль" class="marketpapa-auth-input" />
+			</div>
+			<button class="marketpapa-button marketpapa-button-primary marketpapa-button-auth" data-id="`+productId+`">Войти</button>
+		</div>
+	`;
+}
+
+var authListener = function(event) {
+	var id = event.target.getAttribute('data-id');
+	var phoneTarget = document.querySelectorAll('.marketpapa-widget[data-id="' + id + '"] .marketpapa-auth-input[name="phone"]');
+	var passwordTarget = document.querySelectorAll('.marketpapa-widget[data-id="' + id + '"] .marketpapa-auth-input[name="password"]');
+	if (!phoneTarget || phoneTarget.length === 0 || !passwordTarget || passwordTarget.length === 0) return false;
+	var phoneValue = phoneTarget[0].value;
+	var passwordValue = passwordTarget[0].value;
+	if (phoneValue.trim() == '' || passwordValue.trim() == '') return false;
+	auth(id, phoneValue.trim(), passwordValue.trim());
+}
+
+function authClickListener() {
+	document.querySelectorAll('.marketpapa-button-auth').forEach(function(item) {
+		item.removeEventListener('click', authListener);
+		item.addEventListener('click', authListener);
+	});
+}
+
+function initEmptyTemplate(productId, target) {
+	var div = document.createElement("div");
+	div.setAttribute("id", "marketpapa-widget-" + productId);
+	div.setAttribute("class", "marketpapa-widget marketpapa-widget-auth");
+	div.setAttribute("data-id", productId);
+	div.innerHTML = getAuthTpl(productId);
+	target.prepend(div);
+
+	authClickListener();
+}
+
+function initPopupEmptyTemplate(productId, target) {
+	document.querySelectorAll('.j-product-popup .same-part-kt__delivery-advantages .marketpapa-widget')
+			.forEach(function(item) {
+		item.remove();
+	});
+
+	var div = document.createElement("div");
+	div.setAttribute("id", "marketpapa-widget-" + productId);
+	div.setAttribute("class", "marketpapa-widget marketpapa-widget-auth");
+	div.setAttribute("data-id", productId);
+	div.innerHTML = getAuthTpl(productId);
+	target.prepend(div);
+
+	authClickListener();
+}
+
+var popupInterval = false, popupProductId;
+var productInterval = false, pageProductId;
+
+function initPopupMP(productId) {
+	var _wrapper, popupTarget, _popupTarget;
+
+	if (popupProductId != productId && popupInterval) {
+		clearInterval(popupInterval);
+	}
+	popupProductId = productId;
+
+	popupInterval = setInterval(function() {
+		popupTarget = document.querySelectorAll('.j-product-popup .same-part-kt__delivery-advantages');
+		_popupTarget = document.getElementById("marketpapa-widget-" + productId);
+		if (popupTarget.length > 0 && !_popupTarget) {
+			popupTarget = popupTarget[0];
+			// console.log('popup', _popupTarget);
+			initPopupEmptyTemplate(productId, popupTarget);
+			document.getElementById("marketpapa-logo-" + productId).setAttribute('src', logoSrc);
+			_wrapper = document.getElementsByClassName('marketpapa-wrapper');
+			if (_wrapper && _wrapper.length > 0) {
+				_wrapper[0].setAttribute('style', `background-image: url(`+ bgSrc +`);`);
+			}
+
+			checkAccess(popupTarget, popupProductId);
+		}
+
+	}, 1000);
+}
+
+function initMP(productId) {
+	var _wrapper, productTarget, _productTarget;
+
+	if (pageProductId != productId && productInterval) {
+		clearInterval(productInterval);
+	}
+	pageProductId = productId;
+
+	productInterval = setInterval(function() {
+		productTarget = document.getElementsByClassName('same-part-kt__delivery-advantages');
+		_productTarget = document.getElementById("marketpapa-widget-" + productId);
+		if (productTarget.length > 0 && !_productTarget) {
+			productTarget = productTarget[0];
+			// console.log('aa', _productTarget);
+			initEmptyTemplate(productId, productTarget);
+			document.getElementById("marketpapa-logo-" + productId).setAttribute('src', logoSrc);
+			_wrapper = document.getElementsByClassName('marketpapa-wrapper');
+			if (_wrapper && _wrapper.length > 0) {
+				_wrapper[0].setAttribute('style', `background-image: url(`+ bgSrc +`);`);
+			}
+
+			checkAccess(productTarget, pageProductId);
+		}
+	}, 1000);
+}
+/*
+function initCatalogItemTemplate(productId, target) {
+	var div = document.createElement("div");
+	div.setAttribute("id", "marketpapa-widget-" + productId);
+	div.setAttribute("class", "marketpapa-widget marketpapa-widget-auth");
+	div.setAttribute("data-id", productId);
+	div.innerHTML = getAuthTpl(productId);
+	target.prepend(div);
+
+	authClickListener();
+}
+*/
+function renderCatalogWidgets(catalogIds) {
+	for (var i=0; i<catalogIds.length; i++) {
+		// initCatalog(catalogIds[i]);
+	}
 }
 
 function isDetailPage(pathname) {
@@ -407,37 +617,43 @@ function isDetailPage(pathname) {
 	return false;
 }
 
-function checkCatalogPage(pathname) {
-	var matches = pathname.replace(/^\//, '').match(/^catalog\//g);
+function isCatalogPage(pathname) {
+	var matches = pathname.replace(/^\//, '').match(/^catalog\/[A-Za-z]/g);
+	return matches && matches.length > 0;
+}
+
+var catalogIds = [];
+
+function getCatalogIds(pathname) {
 	var id, idMatch;
-	if (matches && matches.length > 0) {
-		document.querySelectorAll('#catalog-content .product-card').forEach(function(item) {
-			id = item.getAttribute('id');
-			if (id) {
-				idMatch = id.match(/\d+/g);
-				if (idMatch && idMatch.length > 0) {
-					initCatalog(idMatch[0]);
-				}
+	document.querySelectorAll('#catalog-content .product-card').forEach(function(item) {
+		id = item.getAttribute('id');
+		if (id) {
+			idMatch = id.match(/\d+/g);
+			if (idMatch && idMatch.length > 0) {
+				catalogIds.push(idMatch[0]);
 			}
-		});
-	}
-	return false;
+		}
+	});
 }
 
 loadAssets();
 
 var mpLocation = document.location.pathname;
 
-var productId = isDetailPage(mpLocation);
-if (productId) initMP(productId, '', false);
-
-checkCatalogPage(mpLocation);
-
+// product page
+var prevProductId = '',
+	productId = isDetailPage(mpLocation);
+if (productId) {
+	prevProductId = productId;
+	initMP(productId);
+}
 
 var mpPreviewWrap, mpPreviewId, _mpPreviewId, _mpPrevieMatches;
 
 var checkLocationInterval = setInterval(function() {
 
+	// listen product quick view popup
 	mpPreviewWrap = document.querySelectorAll('.same-part-kt__header.j-product-title');
 	if (mpPreviewWrap.length > 0) {
 		_mpPreviewId = mpPreviewWrap[0].getAttribute('href');
@@ -447,46 +663,31 @@ var checkLocationInterval = setInterval(function() {
 			_mpPreviewId = _mpPrevieMatches[0].match(/\d+/)[0]
 
 			if (_mpPreviewId != mpPreviewId) {
-				// console.log('mpPreviewId', _mpPreviewId);
-				initPreviewMP(_mpPreviewId);
+				initPopupMP(_mpPreviewId);
 			}
 			mpPreviewId = _mpPreviewId;
 		}
 	}
 
+	// listen product page
 	if (document.location.pathname != mpLocation) {
 		mpLocation = document.location.pathname;
-		checkCatalogPage(mpLocation);
 		productId = isDetailPage(mpLocation);
-		if (productId) initMP(productId, '', false);
+		if (productId) {
+			var widgets = document.getElementsByClassName('marketpapa-widget');
+			for (var i=0; i<widgets.length; i++) {
+				widgets[i].remove();
+			}
+			initMP(productId);
+		}
 	}
-}, 500);
-/*
 
-    function getToken() {
-        fetch(new Request('https://api.marketpapa.ru/api/plugin/get_token'))
-        .then(res => res.json())
-        .then(res => {
-        	console.log(document.cookie)
+	// listen catalog page
+	if (isCatalogPage(mpLocation) && catalogIds.length === 0
+			|| document.location.pathname != mpLocation) {
+		getCatalogIds(mpLocation);
+		if (catalogIds.length > 0) renderCatalogWidgets(catalogIds);
+	}
+}, 1000);
 
-
-	        fetch(new Request('https://api.marketpapa.ru/api/plugin/item/info/6220719', {
-	            method: 'POST',
-	            headers: {
-	            	'Content-Type': 'application/json',
-            		'Authorization': 'Token ' + res.token
-	            },
-	            body: JSON.stringify({ access_token: res.token })
-	        }))
-	        .then(res => res.json())
-	        .then(res => {
-	        })
-	        .catch(error => {
-	        })
-        })
-        .catch(error => {})
-    }
-
-getToken()
-*/
 // переход из товара в каталог - не рендерит

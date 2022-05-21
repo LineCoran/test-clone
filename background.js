@@ -1,5 +1,5 @@
 (() => {
-    var token = '', productId = '', dataObj = {}, parsedData = {};
+    var authToken = '', accessToken = '', productId = '', dataObj = {}, parsedData = {};
     var _sendResponse;
 
     var revenueChart = {
@@ -380,8 +380,11 @@
     function fetchInfo() {
         fetch(new Request('https://api.marketpapa.ru/api/plugin/item/info/' + productId, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ access_token: token })
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Token ' + authToken
+            },
+            body: JSON.stringify({ access_token: accessToken })
         }))
         .then(res => res.json())
         .then(res => {
@@ -403,8 +406,11 @@
     function fetchData(callback) {
         fetch(new Request('https://api.marketpapa.ru/api/plugin/item/data/' + productId, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ access_token: token })
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Token ' + authToken
+            },
+            body: JSON.stringify({ access_token: accessToken })
         }))
         .then(res => res.json())
         .then(res => {
@@ -417,8 +423,7 @@
         fetch(new Request('https://api.marketpapa.ru/api/plugin/get_token'))
         .then(res => res.json())
         .then(res => {
-            token = res.token;
-            fetchData(callback);
+            callback(res.token);
         })
         .catch(error => {})
     }
@@ -445,12 +450,56 @@
         return info;
     }
 
+    function auth(phone, password, callback) {
+        phone = phone.match(/\d+/g);
+        if (phone.length > 0) {
+            phone = '+' + phone.join('');
+        }
+        var data = {
+            user: {
+                phone_number: phone,
+                password: password.trim()
+            }
+        }
+        fetch(new Request('https://api.marketpapa.ru/api-auth/users/login',
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }
+        ))
+        .then(res => res.json())
+        .then(res => {
+            if (!res.hasOwnProperty('errors'))
+                callback(res.user.token);
+            else
+                callback(false);
+        })
+        .catch(error => {
+            callback(false);    
+        })
+    }
+
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         switch (request.msg) {
+            case 'auth':
+                auth(request.phone, request.password, function(res) {
+                    sendResponse(res);
+                });
+                return true;
+                break;
+            case 'get_token':
+                getToken(function(res) {
+                    sendResponse(res);
+                });
+                return true;
+                break;
             case 'init_mp':
                 productId = request.id;
+                authToken = request.authToken;
+                accessToken = request.accessToken;
                 _sendResponse = sendResponse;
-                getToken(function(res) {
+                fetchData(function(res) {
                     dataObj = { ...res };
                     onMarketPapaDataReceived();
                     fetchInfo();
@@ -461,10 +510,13 @@
         }
         if (request.msg.indexOf('get_catalog_item') == 0) {
             productId = request.id;
-            // if (parseInt(productId) == 17397807)
-                getToken(function(res) {
-                    sendResponse(calcCatalogItemData(res));
-                });
+
+            authToken = request.authToken;
+            accessToken = request.accessToken;
+            fetchData(function(res) {
+                sendResponse(res);
+                // sendResponse(calcCatalogItemData(res));
+            });
             return true;
         }
     });
