@@ -46,7 +46,7 @@
 	font-weight: 500;
 	background: #6000C0;
 	border: 1px solid #6000C0;
-	border-radius: 4px;
+	border-radius: 4px !important;
 	padding: 1px 7px;
 	color: #F2F3F6;
 	text-align: center;
@@ -279,3 +279,27 @@
 .marketpapa-auth-form {
 	margin-bottom: 30px;
 }
+
+/* brand */
+.marketpapa-brand-wrapper {
+	font-family: 'Montserrat', sans-serif;
+	width: 100%;
+}
+.marketpapa-brand-data-row {
+	line-height: 19px;
+	font-size: 13px;
+	font-weight: 600;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.marketpapa-brand-data-row + .marketpapa-brand-data-row {
+	margin-top: 2px;
+}
+.marketpapa-brand-label {
+	color: #606569;
+}
+.marketpapa-brand-value {
+	color: #222222;
+}
+/* /brand */

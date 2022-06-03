@@ -637,6 +637,288 @@ function getCatalogIds(pathname) {
 	});
 }
 
+/*
+ * START BRAND
+ */
+var brandName = '';
+var brandData = false;
+
+function initBrandTemplate() {
+	if (!brandData)
+		return false;
+
+	var target = document.querySelectorAll('.brand-logo');
+	if (!target || target.length == 0)
+		return false;
+
+	target = target[0];
+	// console.log(target.outerHTML);
+
+	var brand_tpl = `
+		<div id="marketpapa-brand-widget" class="marketpapa-brand-widget">
+			<div class="marketpapa-wrapper marketpapa-brand-wrapper">
+				<div class="marketpapa-header">
+					<img src="${ logoSrc }" alt="" />
+				</div>
+				<div class="marketpapa-content">
+					<div class="marketpapa-brand-data-row">
+						<span class="marketpapa-brand-label">Выручка</span>
+						<span class="marketpapa-brand-value">${ toRuble(brandData.amount_real_sales_fbo_total) } ₽</span>
+					</div>
+					<div class="marketpapa-brand-data-row">
+						<span class="marketpapa-brand-label">Упущ. выручка</span>
+						<span class="marketpapa-brand-value">${ toRuble(brandData.amount_lost_real_sales_fbo) } ₽</span>
+					</div>
+					<div class="marketpapa-brand-data-row">
+						<span class="marketpapa-brand-label">Продажи</span>
+						<span class="marketpapa-brand-value">${ formatNumber(brandData.real_sales_fbo_total) } шт</span>
+					</div>
+					<div class="marketpapa-brand-data-row">
+						<span class="marketpapa-brand-label">Заказы</span>
+						<span class="marketpapa-brand-value">${ formatNumber(brandData.sales_fbo_total) } шт</span>
+					</div>
+					<div class="marketpapa-brand-data-row">
+						<span class="marketpapa-brand-label">% Выкупа</span>
+						<span class="marketpapa-brand-value">${ brandData.real_sales_rate_fbo } %</span>
+					</div>
+					<div class="marketpapa-brand-data-row">
+						<span class="marketpapa-brand-label">Средняя цена</span>
+						<span class="marketpapa-brand-value">${ toRuble(brandData._avg__last_sale_price_u) } ₽</span>
+					</div>
+					<div class="marketpapa-brand-data-row">
+						<span class="marketpapa-brand-label">Остаток</span>
+						<span class="marketpapa-brand-value">${ formatNumber(brandData.last_qty_fbo_total) } шт</span>
+					</div>
+					<a href="https://marketpapa.ru/brand?brand_name=${ encodeURIComponent(brandName) }"
+							target="_blank"
+							class="marketpapa-button marketpapa-button-primary">
+						Подробнее
+					</a>
+				</div>
+			</div>
+		</div>
+	`;
+	/*
+	function marketPapaTemplate() {
+		if (!mpData) return '';
+		return `
+		<div class="marketpapa-wrapper">
+			<div class="marketpapa-header">
+				<img id="marketpapa-logo`+preview+`" src="" />
+			</div>
+			<div id="marketpapa-content`+preview+`" class="marketpapa-content">
+				<div id="marketpapa-chart-filter-wrapper`+preview+`">` + mpFilterTemplate() + `</div>
+				<div class="marketpapa-chart" id="marketpapa-chart`+preview+`"></div>
+				<div class="marketpapa-buttons">
+					<button class="marketpapa-button marketpapa-period-filter" data-period="month">30 дней</button>
+					<button class="marketpapa-button marketpapa-period-filter marketpapa-button-outline" data-period="week">7 дней</button>
+					<button class="marketpapa-button marketpapa-period-filter marketpapa-button-outline" data-period="twoWeeks">14 дней</button>
+				</div>
+			</div>
+			` + mpFooterTemplate() + `
+		</div>
+	*/
+	target.innerHTML = target.outerHTML + brand_tpl;
+}
+
+function getBrandData(brand_name) {
+	chrome.runtime.sendMessage({
+		msg: 'get_brand',
+		brand_name: brand_name,
+		authToken: authToken,
+		accessToken: accessToken
+	}, function(response) {
+		// console.log(response);
+		brandData = response;
+		initBrandTemplate();
+	});
+}
+
+function isBrandPage(pathname) {
+	var matches = pathname.replace(/^\//, '').match(/^brands\/.+/g);
+	var isBrand = matches && matches.length > 0;
+	if (!isBrand) return false;
+
+	var brandsKey = matches[0].replace('brands/', '').replace(/\?.+/, '').replace(/\/.+/, '');
+	// console.log(brandsKey);
+	// https://www.wildberries.ru/webapi/brands/data/ardanix
+	fetch(new Request('https://www.wildberries.ru/webapi/brands/data/'+brandsKey,
+		{
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({})
+		}
+	))
+	.then(res => res.json())
+	.then(res => {
+		// console.log(res);
+		if (res && res.value && res.value.data && res.value.data.model && res.value.data.model.brandInfo && res.value.data.model.brandInfo.name) {
+			brandName = res.value.data.model.brandInfo.name;
+			if (isAuth()) {
+				if (isAccessTokenExists()) {
+					getBrandData(brandName);
+				} else {
+				}
+			} else {
+			}
+		}
+	})
+	.catch(error => {
+	});
+
+	/*var repeats = 0;
+	var brandInterval = setInterval(function() {
+		var brandLogo = document.querySelectorAll('.brand-logo img');
+
+		if (brandLogo && brandLogo.length > 0) {
+			clearInterval(brandInterval);
+
+			_brandName = brandLogo[0].getAttribute('alt');
+			if (_brandName.trim() != '') {
+				// brand detected
+				brandName = _brandName.trim();
+
+				if (isAuth()) {
+					if (isAccessTokenExists()) {
+						// console.log('ALL READY')
+						// get data and render
+						getBrandData(brandName);
+					} else {
+						// console.log('NO TOKEN')
+						// getToken(function() { getData(target, id); });
+
+						// get data and render
+					}
+				} else {
+					// console.log('NOT AUTH')
+					// render login
+				}
+			}
+		}
+
+		repeats += 1;
+		if (repeats == 5) clearInterval(brandInterval);
+
+	}, 1000);*/
+}
+
+/*
+ * END BRAND
+ */
+
+/*
+ * START SUPPLIER
+ */
+var supplierName = '';
+var supplierData = false;
+
+function initSupplierTemplate() {
+	if (!supplierData)
+		return false;
+
+	var target = document.querySelectorAll('.sidemenu-overflow');
+	if (!target || target.length == 0)
+		return false;
+
+	target = target[0];
+
+	var supplier_tpl = `
+		<div id="marketpapa-supplier-widget" class="marketpapa-brand-widget">
+			<div class="marketpapa-wrapper marketpapa-brand-wrapper">
+				<div class="marketpapa-header">
+					<img src="${ logoSrc }" alt="" />
+				</div>
+				<div class="marketpapa-content">
+					<div class="marketpapa-brand-data-row">
+						<span class="marketpapa-brand-label">Выручка</span>
+						<span class="marketpapa-brand-value">${ toRuble(supplierData.amount_real_sales_fbo_total) } ₽</span>
+					</div>
+					<div class="marketpapa-brand-data-row">
+						<span class="marketpapa-brand-label">Упущ. выручка</span>
+						<span class="marketpapa-brand-value">${ toRuble(supplierData.amount_lost_real_sales_fbo) } ₽</span>
+					</div>
+					<div class="marketpapa-brand-data-row">
+						<span class="marketpapa-brand-label">Продажи</span>
+						<span class="marketpapa-brand-value">${ formatNumber(supplierData.real_sales_fbo_total) } шт</span>
+					</div>
+					<div class="marketpapa-brand-data-row">
+						<span class="marketpapa-brand-label">Заказы</span>
+						<span class="marketpapa-brand-value">${ formatNumber(supplierData.sales_fbo_total) } шт</span>
+					</div>
+					<div class="marketpapa-brand-data-row">
+						<span class="marketpapa-brand-label">% Выкупа</span>
+						<span class="marketpapa-brand-value">${ supplierData.real_sales_rate_fbo } %</span>
+					</div>
+					<div class="marketpapa-brand-data-row">
+						<span class="marketpapa-brand-label">Средняя цена</span>
+						<span class="marketpapa-brand-value">${ toRuble(supplierData._avg__last_sale_price_u) } ₽</span>
+					</div>
+					<div class="marketpapa-brand-data-row">
+						<span class="marketpapa-brand-label">Остаток</span>
+						<span class="marketpapa-brand-value">${ formatNumber(supplierData.last_qty_fbo_total) } шт</span>
+					</div>
+					<a href="https://marketpapa.ru/supplier?supplier_name=${ encodeURIComponent(supplierName) }"
+							target="_blank"
+							class="marketpapa-button marketpapa-button-primary">
+						Подробнее
+					</a>
+				</div>
+			</div>
+		</div>
+	`;
+	target.innerHTML = supplier_tpl + target.outerHTML;
+}
+
+function getSupplierData(supplier_name) {
+	chrome.runtime.sendMessage({
+		msg: 'get_supplier',
+		supplier_name: supplier_name,
+		authToken: authToken,
+		accessToken: accessToken
+	}, function(response) {
+		supplierData = response;
+		initSupplierTemplate();
+	});
+}
+
+function isSupplierPage(pathname) {
+	var matches = pathname.replace(/^\//, '').match(/^seller\/.+/g);
+	var isSupplier = matches && matches.length > 0;
+	if (!isSupplier) return false;
+
+	var sellerId = matches[0].replace('seller/', '').replace(/\?.+/, '').replace(/\/.+/, '');
+	fetch(new Request('https://www.wildberries.ru/webapi/seller/data/'+sellerId,
+		{
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({})
+		}
+	))
+	.then(res => res.json())
+	.then(res => {
+		if (res && res.value && res.value.data && res.value.data.model && res.value.data.model.sellerInfo && res.value.data.model.sellerInfo.name) {
+			supplierName = res.value.data.model.sellerInfo.name;
+			if (isAuth()) {
+				if (isAccessTokenExists()) {
+					getSupplierData(supplierName);
+				} else {
+				}
+			} else {
+			}
+		}
+	})
+	.catch(error => {
+	});
+}
+
+/*
+ * END SUPPLIER
+ */
+
 loadAssets();
 
 var mpLocation = document.location.pathname;
@@ -648,6 +930,12 @@ if (productId) {
 	prevProductId = productId;
 	initMP(productId);
 }
+
+// check brand on init
+isBrandPage(mpLocation);
+
+// check supplier on init
+isSupplierPage(mpLocation);
 
 var mpPreviewWrap, mpPreviewId, _mpPreviewId, _mpPrevieMatches;
 
@@ -669,9 +957,9 @@ var checkLocationInterval = setInterval(function() {
 		}
 	}
 
-	// listen product page
 	if (document.location.pathname != mpLocation) {
 		mpLocation = document.location.pathname;
+		// listen product page
 		productId = isDetailPage(mpLocation);
 		if (productId) {
 			var widgets = document.getElementsByClassName('marketpapa-widget');
@@ -680,6 +968,12 @@ var checkLocationInterval = setInterval(function() {
 			}
 			initMP(productId);
 		}
+
+		// listen brand page
+		isBrandPage(mpLocation);
+
+		// listen supplier page
+		isSupplierPage(mpLocation);
 	}
 
 	// listen catalog page
@@ -688,6 +982,6 @@ var checkLocationInterval = setInterval(function() {
 		getCatalogIds(mpLocation);
 		if (catalogIds.length > 0) renderCatalogWidgets(catalogIds);
 	}
-}, 1000);
 
-// переход из товара в каталог - не рендерит
+	// переход из товара в каталог - не рендерит
+}, 1000);

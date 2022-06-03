@@ -480,6 +480,181 @@
         })
     }
 
+    function timestampToString(date, format) {
+        var d = new Date(date);
+        var day = d.getDate();
+        if (day < 10) day = '0'+day;
+        var month = d.getMonth()+1;
+        if (month < 10) month = '0'+month;
+        var year = d.getFullYear();
+        if (format === 'YYYY-MM-DD') return year + '-' + month + '-' + day;
+        return date;
+    }
+
+    function getMonthParam() {
+        var endDate = new Date();
+        endDate.setDate(endDate.getDate()-1);
+        var startDate = new Date(endDate);
+        startDate.setDate(startDate.getDate()-29);
+
+        var dateStart = timestampToString(startDate.getTime(), 'YYYY-MM-DD');
+        var dateEnd = timestampToString(endDate.getTime(), 'YYYY-MM-DD');
+
+        return '&d1=' + dateStart + '&d2=' + dateEnd;
+    }
+
+    function getBrand(request, callback) {
+        fetch(new Request('https://api.marketpapa.ru/api/brand_new?brand_name=' + 
+                            encodeURIComponent(request.brand_name) + '&plugin=true' + getMonthParam(),
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Token ' + authToken
+                },
+                body: JSON.stringify({
+                    endRow: 100,
+                    filterModel: {},
+                    groupKeys: [],
+                    pivotCols: [],
+                    pivotMode: false,
+                    rowGroupCols: [],
+                    sortModel: [],
+                    startRow: 0,
+                    valueCols: [],
+                    access_token: accessToken
+                })
+            }
+        ))
+        .then(res => res.json())
+        .then(res => {
+            if (!res.rows || res.rows.length == 0)
+                return false;
+
+            
+            // % Выкупа
+            
+            var amount_real_sales_fbo_total = 0, // Выручка
+                amount_lost_real_sales_fbo = 0, // Упущ. выручка
+                real_sales_fbo_total = 0, // Продажи
+                sales_fbo_total = 0, // Заказы
+                last_qty_fbo_total = 0, // Остаток
+                _sum__last_sale_price_u = 0,
+                _avg__last_sale_price_u = 0; // Средняя цена
+            // var priceCount = 0;
+            res.rows.map(item => {
+                amount_real_sales_fbo_total = item.amount_real_sales_fbo_total;
+                amount_lost_real_sales_fbo += item.amount_lost_real_sales_fbo;
+                real_sales_fbo_total = item.real_sales_fbo_total;
+                sales_fbo_total = item.sales_fbo_total;
+                last_qty_fbo_total = item.last_qty_fbo_total;
+                if (item.last_sale_price_u) {
+                    _sum__last_sale_price_u += item.last_sale_price_u;
+                }
+                // priceCount += 1;
+
+                return item;
+            });
+            if (res.rows.length > 0)
+                _avg__last_sale_price_u = _sum__last_sale_price_u / res.rows.length;
+
+            var real_sales_rate_fbo = 0;
+            if (sales_fbo_total > 0) {
+                real_sales_rate_fbo = real_sales_fbo_total / sales_fbo_total;
+            }
+
+            var resData = {
+                ...res,
+                amount_real_sales_fbo_total: amount_real_sales_fbo_total,
+                amount_lost_real_sales_fbo: amount_lost_real_sales_fbo,
+                real_sales_fbo_total: real_sales_fbo_total,
+                sales_fbo_total: sales_fbo_total,
+                last_qty_fbo_total: last_qty_fbo_total,
+                _avg__last_sale_price_u: parseInt(_avg__last_sale_price_u),
+                real_sales_rate_fbo: parseInt(real_sales_rate_fbo * 100)
+            };
+            callback(resData);
+        })
+        .catch(error => {
+        })
+    }
+
+    function getSupplier(request, callback) {
+        fetch(new Request('https://api.marketpapa.ru/api/supplier_new?supplier_name=' + 
+                            encodeURIComponent(request.supplier_name) + '&plugin=true' + getMonthParam(),
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Token ' + authToken
+                },
+                body: JSON.stringify({
+                    endRow: 100,
+                    filterModel: {},
+                    groupKeys: [],
+                    pivotCols: [],
+                    pivotMode: false,
+                    rowGroupCols: [],
+                    sortModel: [],
+                    startRow: 0,
+                    valueCols: [],
+                    access_token: accessToken
+                })
+            }
+        ))
+        .then(res => res.json())
+        .then(res => {
+            if (!res.rows || res.rows.length == 0)
+                return false;
+
+            
+            // % Выкупа
+            
+            var amount_real_sales_fbo_total = 0, // Выручка
+                amount_lost_real_sales_fbo = 0, // Упущ. выручка
+                real_sales_fbo_total = 0, // Продажи
+                sales_fbo_total = 0, // Заказы
+                last_qty_fbo_total = 0, // Остаток
+                _sum__last_sale_price_u = 0,
+                _avg__last_sale_price_u = 0; // Средняя цена
+            // var priceCount = 0;
+            res.rows.map(item => {
+                amount_real_sales_fbo_total += item.amount_real_sales_fbo;
+                amount_lost_real_sales_fbo += item.amount_lost_real_sales_fbo;
+                real_sales_fbo_total += item.real_sales_fbo;
+                sales_fbo_total += item.sales_fbo;
+                last_qty_fbo_total = item.last_qty_fbo;
+                if (item.last_sale_price_u) {
+                    _sum__last_sale_price_u += item.last_sale_price_u;
+                }
+                // priceCount += 1;
+
+                return item;
+            });
+            if (res.rows.length > 0)
+                _avg__last_sale_price_u = _sum__last_sale_price_u / res.rows.length;
+
+            var real_sales_rate_fbo = 0;
+            if (sales_fbo_total > 0) {
+                real_sales_rate_fbo = real_sales_fbo_total / sales_fbo_total;
+            }
+
+            var resData = {
+                ...res,
+                amount_real_sales_fbo_total: amount_real_sales_fbo_total,
+                amount_lost_real_sales_fbo: amount_lost_real_sales_fbo,
+                real_sales_fbo_total: real_sales_fbo_total,
+                sales_fbo_total: sales_fbo_total,
+                last_qty_fbo_total: last_qty_fbo_total,
+                _avg__last_sale_price_u: parseInt(_avg__last_sale_price_u),
+                real_sales_rate_fbo: parseInt(real_sales_rate_fbo * 100)
+            };
+            callback(resData);
+        })
+        .catch(error => {
+        })
+    }
+
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         switch (request.msg) {
             case 'auth':
@@ -503,6 +678,22 @@
                     dataObj = { ...res };
                     onMarketPapaDataReceived();
                     fetchInfo();
+                });
+                return true;
+                break;
+            case 'get_brand':
+                authToken = request.authToken;
+                accessToken = request.accessToken;
+                getBrand(request, function(res) {
+                    sendResponse(res);
+                });
+                return true;
+                break;
+            case 'get_supplier':
+                authToken = request.authToken;
+                accessToken = request.accessToken;
+                getSupplier(request, function(res) {
+                    sendResponse(res);
                 });
                 return true;
                 break;
