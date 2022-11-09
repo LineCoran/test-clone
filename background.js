@@ -655,6 +655,46 @@
         })
     }
 
+    var catalogData = [];
+
+    function waitCatalogData(callback, allCount) {
+        if (catalogData.length === allCount) {
+            callback(catalogData);
+        }
+    }
+
+    function fetchCatalogItem(id, callback, idLength) {
+        fetch(new Request('https://api.marketpapa.ru/api/plugin/item/data/' + id, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Token ' + authToken
+            },
+            body: JSON.stringify({ access_token: accessToken })
+        }))
+        .then(res => res.json())
+        .then(res => {
+            catalogData = [
+                ...catalogData,
+                { iddd: id, data: res }
+            ];
+            waitCatalogData(callback, idLength);
+        })
+        .catch(error => {
+            catalogData = [
+                ...catalogData,
+                { id: id, data: error }
+            ];
+            waitCatalogData(callback, idLength);
+        })
+    }
+
+    function getCatalogItemsInfo(ids, callback) {
+        for (var i=0; i<ids.length; i++) {
+            fetchCatalogItem(ids[i], callback, ids.length);
+        }
+    }
+
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         switch (request.msg) {
             case 'auth':
@@ -697,9 +737,22 @@
                 });
                 return true;
                 break;
+
+            case 'get_catalog_items':
+                authToken = request.authToken;
+                accessToken = request.accessToken;
+
+                // sendResponse(request.id);
+                // getCatalogItemsInfo(request.id, function(res) {
+                //     sendResponse(res);
+                // });
+
+                return true;
+                break;
+
             default: break;
         }
-        if (request.msg.indexOf('get_catalog_item') == 0) {
+        /*if (request.msg.indexOf('get_catalog_item') == 0) {
             productId = request.id;
 
             authToken = request.authToken;
@@ -709,6 +762,6 @@
                 // sendResponse(calcCatalogItemData(res));
             });
             return true;
-        }
+        }*/
     });
 })();

@@ -351,7 +351,7 @@ function initCatalog(id) {
 		authToken: authToken,
 		accessToken: accessToken
 	}, function(response) {
-		// console.log('get_catalog_item ' + id, response);
+		console.log('get_catalog_item ' + id, response);
 		// _initCatalog(id);
 		/*
 		var initInterval = setInterval(function() {
@@ -574,7 +574,9 @@ function initMP(productId) {
 	pageProductId = productId;
 
 	productInterval = setInterval(function() {
-		productTarget = document.getElementsByClassName('same-part-kt__delivery-advantages');
+		
+		productTarget = document.getElementsByClassName('product-page__order');
+		// productTarget = document.getElementsByClassName('same-part-kt__delivery-advantages');
 		_productTarget = document.getElementById("marketpapa-widget-" + productId);
 		if (productTarget.length > 0 && !_productTarget) {
 			productTarget = productTarget[0];
@@ -604,7 +606,7 @@ function initCatalogItemTemplate(productId, target) {
 */
 function renderCatalogWidgets(catalogIds) {
 	for (var i=0; i<catalogIds.length; i++) {
-		// initCatalog(catalogIds[i]);
+		initCatalog(catalogIds[i]);
 	}
 }
 
@@ -922,7 +924,6 @@ function isSupplierPage(pathname) {
 loadAssets();
 
 var mpLocation = document.location.pathname;
-
 // product page
 var prevProductId = '',
 	productId = isDetailPage(mpLocation);
@@ -980,7 +981,17 @@ var checkLocationInterval = setInterval(function() {
 	if (isCatalogPage(mpLocation) && catalogIds.length === 0
 			|| document.location.pathname != mpLocation) {
 		getCatalogIds(mpLocation);
-		if (catalogIds.length > 0) renderCatalogWidgets(catalogIds);
+		if (catalogIds.length > 0) {
+			chrome.runtime.sendMessage({
+				msg: 'get_catalog_items',
+				id: catalogIds,
+				authToken: authToken,
+				accessToken: accessToken
+			}, function(response) {
+				console.log('get_catalog_items', response);
+			});
+			// renderCatalogWidgets(catalogIds);
+		}
 	}
 
 	// переход из товара в каталог - не рендерит
