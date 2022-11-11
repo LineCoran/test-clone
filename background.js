@@ -504,8 +504,11 @@
     }
 
     function getBrand(request, callback) {
-        fetch(new Request('https://api.marketpapa.ru/api/brand_new?brand_name=' + 
-                            encodeURIComponent(request.brand_name) + '&plugin=true' + getMonthParam(),
+        // const brand_url = `https://api.marketpapa.ru/api/brand_new?brand_id=${ request.brand_id }&brand_name=${ encodeURIComponent(request.brand_name) }${ getMonthParam() }`;
+        // callback(brand_url);
+        // return false;
+        fetch(new Request('https://api.marketpapa.ru/api/brand_new?brand_id=' + request.brand_id + '&brand_name=' + 
+                            encodeURIComponent(request.brand_name) /*+ '&plugin=true'*/ + getMonthParam(),
             {
                 method: 'POST',
                 headers: {
@@ -521,8 +524,8 @@
                     rowGroupCols: [],
                     sortModel: [],
                     startRow: 0,
-                    valueCols: [],
-                    access_token: accessToken
+                    valueCols: []/*,
+                    access_token: accessToken*/
                 })
             }
         ))

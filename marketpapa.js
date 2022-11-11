@@ -351,8 +351,8 @@ function initCatalog(id) {
 		authToken: authToken,
 		accessToken: accessToken
 	}, function(response) {
-		console.log('get_catalog_item ' + id, response);
-		// _initCatalog(id);
+		// console.log('get_catalog_item ' + id, response);
+		_initCatalog(id);
 		/*
 		var initInterval = setInterval(function() {
 			// clearInterval(initInterval);
@@ -386,13 +386,14 @@ function getCookie(name) {
 }
 
 function isAuth() {
-	var _token = getCookie('marketPapaToken');
+	var _token = getCookie('mpapa_plugin_token');
 	authToken = _token;
 
-	return _token.trim() != '';
+	return _token.trim() != '' && _token.trim() != 'false';
 }
 
 function isAccessTokenExists() {
+	return true;
 	var _accessToken = getCookie('marketPapaAccessToken');
 	accessToken = _accessToken;
 	return _accessToken.trim() != '';
@@ -431,6 +432,8 @@ function getData(target, id) {
 }
 
 function getToken(callback) {
+	callback();
+	return true;
 	chrome.runtime.sendMessage({ msg: 'get_token' }, function(response) {
 		accessToken = response;
     	document.cookie = "marketPapaAccessToken=" + response;
@@ -465,7 +468,7 @@ function auth(id, phone, password) {
 	}, function(response) {
 		// console.log(response);
 		authToken = response;
-    	document.cookie = "marketPapaToken=" + response;
+    	document.cookie = "mpapa_plugin_token=" + response + '; path=/;';
 		getToken(function() { getData(false, id); });
 	});
 }
@@ -513,8 +516,10 @@ function initEmptyTemplate(productId, target) {
 	div.setAttribute("id", "marketpapa-widget-" + productId);
 	div.setAttribute("class", "marketpapa-widget marketpapa-widget-auth");
 	div.setAttribute("data-id", productId);
+	div.setAttribute("style", "margin-top:20px;");
 	div.innerHTML = getAuthTpl(productId);
-	target.prepend(div);
+	// target.prepend(div);
+	target.append(div);
 
 	authClickListener();
 }
@@ -529,8 +534,10 @@ function initPopupEmptyTemplate(productId, target) {
 	div.setAttribute("id", "marketpapa-widget-" + productId);
 	div.setAttribute("class", "marketpapa-widget marketpapa-widget-auth");
 	div.setAttribute("data-id", productId);
+	div.setAttribute("style", "margin-top:20px;");
 	div.innerHTML = getAuthTpl(productId);
-	target.prepend(div);
+	// target.prepend(div);
+	target.append(div);
 
 	authClickListener();
 }
@@ -547,7 +554,7 @@ function initPopupMP(productId) {
 	popupProductId = productId;
 
 	popupInterval = setInterval(function() {
-		popupTarget = document.querySelectorAll('.j-product-popup .same-part-kt__delivery-advantages');
+		popupTarget = document.querySelectorAll('.product__info-wrap');
 		_popupTarget = document.getElementById("marketpapa-widget-" + productId);
 		if (popupTarget.length > 0 && !_popupTarget) {
 			popupTarget = popupTarget[0];
@@ -575,7 +582,7 @@ function initMP(productId) {
 
 	productInterval = setInterval(function() {
 		
-		productTarget = document.getElementsByClassName('product-page__order');
+		productTarget = document.getElementsByClassName('product-page__aside-sticky');
 		// productTarget = document.getElementsByClassName('same-part-kt__delivery-advantages');
 		_productTarget = document.getElementById("marketpapa-widget-" + productId);
 		if (productTarget.length > 0 && !_productTarget) {
@@ -642,6 +649,7 @@ function getCatalogIds(pathname) {
 /*
  * START BRAND
  */
+var brandId = '';
 var brandName = '';
 var brandData = false;
 
@@ -691,7 +699,7 @@ function initBrandTemplate() {
 						<span class="marketpapa-brand-label">Остаток</span>
 						<span class="marketpapa-brand-value">${ formatNumber(brandData.last_qty_fbo_total) } шт</span>
 					</div>
-					<a href="https://marketpapa.ru/brand?brand_name=${ encodeURIComponent(brandName) }"
+					<a href="https://marketpapa.ru/brand?brand_id=${ brandId }&brand_name=${ encodeURIComponent(brandName) }"
 							target="_blank"
 							class="marketpapa-button marketpapa-button-primary">
 						Подробнее
@@ -723,14 +731,14 @@ function initBrandTemplate() {
 	target.innerHTML = target.outerHTML + brand_tpl;
 }
 
-function getBrandData(brand_name) {
+function getBrandData(brand_id, brand_name) {
 	chrome.runtime.sendMessage({
 		msg: 'get_brand',
+		brand_id: brand_id,
 		brand_name: brand_name,
 		authToken: authToken,
 		accessToken: accessToken
 	}, function(response) {
-		// console.log(response);
 		brandData = response;
 		initBrandTemplate();
 	});
@@ -742,7 +750,6 @@ function isBrandPage(pathname) {
 	if (!isBrand) return false;
 
 	var brandsKey = matches[0].replace('brands/', '').replace(/\?.+/, '').replace(/\/.+/, '');
-	// console.log(brandsKey);
 	// https://www.wildberries.ru/webapi/brands/data/ardanix
 	fetch(new Request('https://www.wildberries.ru/webapi/brands/data/'+brandsKey,
 		{
@@ -755,12 +762,12 @@ function isBrandPage(pathname) {
 	))
 	.then(res => res.json())
 	.then(res => {
-		// console.log(res);
 		if (res && res.value && res.value.data && res.value.data.model && res.value.data.model.brandInfo && res.value.data.model.brandInfo.name) {
+			brandId = res.value.data.model.brandInfo.brandCod;
 			brandName = res.value.data.model.brandInfo.name;
 			if (isAuth()) {
 				if (isAccessTokenExists()) {
-					getBrandData(brandName);
+					getBrandData(brandId, brandName);
 				} else {
 				}
 			} else {
@@ -813,6 +820,7 @@ function isBrandPage(pathname) {
 /*
  * START SUPPLIER
  */
+var supplierId = '';
 var supplierName = '';
 var supplierData = false;
 
@@ -861,7 +869,7 @@ function initSupplierTemplate() {
 						<span class="marketpapa-brand-label">Остаток</span>
 						<span class="marketpapa-brand-value">${ formatNumber(supplierData.last_qty_fbo_total) } шт</span>
 					</div>
-					<a href="https://marketpapa.ru/supplier?supplier_name=${ encodeURIComponent(supplierName) }"
+					<a href="https://marketpapa.ru/supplier?supplier_id=${ supplierId }&supplier_name=${ encodeURIComponent(supplierName) }"
 							target="_blank"
 							class="marketpapa-button marketpapa-button-primary">
 						Подробнее
@@ -903,6 +911,7 @@ function isSupplierPage(pathname) {
 	.then(res => res.json())
 	.then(res => {
 		if (res && res.value && res.value.data && res.value.data.model && res.value.data.model.sellerInfo && res.value.data.model.sellerInfo.name) {
+			supplierId = res.value.data.model.sellerInfo.id;
 			supplierName = res.value.data.model.sellerInfo.name;
 			if (isAuth()) {
 				if (isAccessTokenExists()) {
@@ -943,7 +952,7 @@ var mpPreviewWrap, mpPreviewId, _mpPreviewId, _mpPrevieMatches;
 var checkLocationInterval = setInterval(function() {
 
 	// listen product quick view popup
-	mpPreviewWrap = document.querySelectorAll('.same-part-kt__header.j-product-title');
+	mpPreviewWrap = document.querySelectorAll('.product__header.j-product-title');
 	if (mpPreviewWrap.length > 0) {
 		_mpPreviewId = mpPreviewWrap[0].getAttribute('href');
 
@@ -988,9 +997,9 @@ var checkLocationInterval = setInterval(function() {
 				authToken: authToken,
 				accessToken: accessToken
 			}, function(response) {
-				console.log('get_catalog_items', response);
+				// console.log('get_catalog_items', response);
 			});
-			// renderCatalogWidgets(catalogIds);
+			// TODO // renderCatalogWidgets(catalogIds);
 		}
 	}
 
