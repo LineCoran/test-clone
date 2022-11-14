@@ -511,6 +511,35 @@ function authClickListener() {
 	});
 }
 
+var sizeModal;
+
+var sizeLinkListener = function(event) {
+	sizeModal.style.display = "block";
+
+	var id = event.target.getAttribute('data-id');
+	// auth(id, phoneValue.trim(), passwordValue.trim());
+}
+
+function sizeLinkClickListener() {
+	document.querySelectorAll('.marketpapa-widget-size-link').forEach(function(item) {
+		item.removeEventListener('click', authListener);
+		item.addEventListener('click', sizeLinkListener);
+	});
+}
+
+function initSizeTemplate(productId, target) {
+	var div = document.createElement("div");
+	div.setAttribute("id", "marketpapa-widget-size-link-" + productId);
+	div.setAttribute("class", "marketpapa-widget-size-link");
+	div.setAttribute("data-id", productId);
+	div.setAttribute("style", "margin-top:20px;");
+	div.innerHTML = `<div>Аналитика по размеру</div>`;
+	
+	target[0].append(div);
+	
+	sizeLinkClickListener();
+}
+
 function initEmptyTemplate(productId, target) {
 	var div = document.createElement("div");
 	div.setAttribute("id", "marketpapa-widget-" + productId);
@@ -574,6 +603,7 @@ function initPopupMP(productId) {
 
 function initMP(productId) {
 	var _wrapper, productTarget, _productTarget;
+	var sizeLinkTarget;
 
 	if (pageProductId != productId && productInterval) {
 		clearInterval(productInterval);
@@ -596,6 +626,12 @@ function initMP(productId) {
 			}
 
 			checkAccess(productTarget, pageProductId);
+		}
+		
+		sizeLinkTarget = document.getElementsByClassName('product-page__sizes-wrap');
+		_sizeLinkTarget = document.getElementById("marketpapa-widget-size-link-" + productId);
+		if (sizeLinkTarget.length > 0 && !_sizeLinkTarget) {
+			initSizeTemplate(productId, sizeLinkTarget);
 		}
 	}, 1000);
 }
@@ -881,9 +917,10 @@ function initSupplierTemplate() {
 	target.innerHTML = supplier_tpl + target.outerHTML;
 }
 
-function getSupplierData(supplier_name) {
+function getSupplierData(supplier_id, supplier_name) {
 	chrome.runtime.sendMessage({
 		msg: 'get_supplier',
+		supplier_id: supplier_id,
 		supplier_name: supplier_name,
 		authToken: authToken,
 		accessToken: accessToken
@@ -915,7 +952,7 @@ function isSupplierPage(pathname) {
 			supplierName = res.value.data.model.sellerInfo.name;
 			if (isAuth()) {
 				if (isAccessTokenExists()) {
-					getSupplierData(supplierName);
+					getSupplierData(supplierId, supplierName);
 				} else {
 				}
 			} else {
@@ -928,6 +965,41 @@ function isSupplierPage(pathname) {
 
 /*
  * END SUPPLIER
+ */
+
+/*
+ * Start Size modal
+ */
+
+function addSizeModal() {
+	sizeModal = document.createElement("div");
+	// sizeModal.setAttribute("id", "marketpapa-widget-size-modal");
+	sizeModal.setAttribute("class", "marketpapa-widget-modal");
+	sizeModal.innerHTML = `
+		<div class="marketpapa-widget-modal-content">
+			<span class="marketpapa-widget-modal-close">&times;</span>
+			<p>Some text in the Modal..</p>
+		</div>
+	`;
+	document.body.append(sizeModal);
+
+	var span = document.getElementsByClassName("close")[0];
+
+	span.onclick = function() {
+		sizeModal.style.display = "none";
+	}
+
+	window.onclick = function(event) {
+		if (event.target == sizeModal) {
+			sizeModal.style.display = "none";
+		}
+	}
+}
+
+addSizeModal();
+
+/*
+ * End Size modal
  */
 
 loadAssets();

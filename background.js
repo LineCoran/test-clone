@@ -1,3 +1,146 @@
+/**
+ * START UTILS
+ */
+function timestampToString(date, format) {
+    var d = new Date(date);
+    var day = d.getDate();
+    if (day < 10) day = '0'+day;
+    var month = d.getMonth()+1;
+    if (month < 10) month = '0'+month;
+    var year = d.getFullYear();
+    if (format === 'YYYY-MM-DD') return year + '-' + month + '-' + day;
+    return date;
+}
+
+function getMonthParam() {
+    var endDate = new Date();
+    endDate.setDate(endDate.getDate()-1);
+    var startDate = new Date(endDate);
+    startDate.setDate(startDate.getDate()-29);
+
+    var dateStart = timestampToString(startDate.getTime(), 'YYYY-MM-DD');
+    var dateEnd = timestampToString(endDate.getTime(), 'YYYY-MM-DD');
+
+    return '&d1=' + dateStart + '&d2=' + dateEnd;
+}
+/**
+ * END UTILS
+ */
+
+/**
+ * START REQUESTS
+ */
+const API_AUTH_URL = 'https://api.marketpapa.ru/api-auth/'
+const API_URL = 'https://api.marketpapa.ru/api/'
+
+var token = '';
+
+const table_params = {
+    endRow: 100,
+    filterModel: {},
+    groupKeys: [],
+    pivotCols: [],
+    pivotMode: false,
+    rowGroupCols: [],
+    sortModel: [],
+    startRow: 0,
+    valueCols: []
+}
+
+const get = (url) => 
+    new Request(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Token ' + token
+        }
+    })
+
+const post = (url, params) => 
+    new Request(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Token ' + token
+        },
+        body: JSON.stringify(params)
+    })
+
+/**
+ * @param {string} phone
+ * @param {string} password
+ * @returns {Promise<Response>}
+ */
+const authRequest = (phone, password) => {
+    phone = phone.match(/\d+/g);
+    if (phone.length > 0) {
+        phone = '+' + phone.join('');
+    }
+    var data = {
+        user: {
+            phone_number: phone,
+            password: password.trim()
+        }
+    }
+    return fetch(new Request(`${ API_AUTH_URL }users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    }))
+}
+
+/**
+ * @param {number} product_id
+ * @returns {Promise<Response>}
+ */
+const itemInfoRequest = product_id => {
+	return fetch(
+        post(`${ API_URL }plugin/item/info/${ product_id }`, {})
+    )
+}
+
+/**
+ * @param {number} product_id
+ * @returns {Promise<Response>}
+ */
+ const itemDataRequest = product_id => {
+	return fetch(
+        post(`${ API_URL }plugin/item/data/${ product_id }`, {})
+    )
+}
+
+/**
+ * @param {number} brand_id
+ * @param {string} brand_name
+ * @returns {Promise<Response>}
+ */
+ const brandRequest = (brand_id, brand_name) => {
+	return fetch(
+        post(
+            `${ API_URL }brand_new?brand_id=${ brand_id }&brand_name=${ encodeURIComponent(brand_name) }&plugin=true${ getMonthParam() }`,
+            table_params
+        )
+    )
+}
+
+/**
+ * @param {number} supplier_id
+ * @param {string} supplier_name
+ * @returns {Promise<Response>}
+ */
+ const supplierRequest = (supplier_id, supplier_name) => {
+	return fetch(
+        post(
+            `${ API_URL }supplier_new?supplier_id=${ supplier_id }&supplier_name=${ encodeURIComponent(supplier_name) }&plugin=true${ getMonthParam() }`,
+            table_params
+        )
+    )
+}
+
+/**
+ * END REQUESTS
+ */
+
 (() => {
     var authToken = '', accessToken = '', productId = '', dataObj = {}, parsedData = {};
     var _sendResponse;
@@ -378,14 +521,7 @@
     }
 
     function fetchInfo() {
-        fetch(new Request('https://api.marketpapa.ru/api/plugin/item/info/' + productId, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Token ' + authToken
-            },
-            body: JSON.stringify({ access_token: accessToken })
-        }))
+        itemInfoRequest(productId)
         .then(res => res.json())
         .then(res => {
             if (!res.hasOwnProperty('id')) {
@@ -404,26 +540,10 @@
     }
 
     function fetchData(callback) {
-        fetch(new Request('https://api.marketpapa.ru/api/plugin/item/data/' + productId, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Token ' + authToken
-            },
-            body: JSON.stringify({ access_token: accessToken })
-        }))
+        itemDataRequest(productId)
         .then(res => res.json())
         .then(res => {
             callback(res);
-        })
-        .catch(error => {})
-    }
-
-    function getToken(callback) {
-        fetch(new Request('https://api.marketpapa.ru/api/plugin/get_token'))
-        .then(res => res.json())
-        .then(res => {
-            callback(res.token);
         })
         .catch(error => {})
     }
@@ -451,23 +571,7 @@
     }
 
     function auth(phone, password, callback) {
-        phone = phone.match(/\d+/g);
-        if (phone.length > 0) {
-            phone = '+' + phone.join('');
-        }
-        var data = {
-            user: {
-                phone_number: phone,
-                password: password.trim()
-            }
-        }
-        fetch(new Request('https://api.marketpapa.ru/api-auth/users/login',
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            }
-        ))
+        authRequest(phone, password)
         .then(res => res.json())
         .then(res => {
             if (!res.hasOwnProperty('errors'))
@@ -480,55 +584,8 @@
         })
     }
 
-    function timestampToString(date, format) {
-        var d = new Date(date);
-        var day = d.getDate();
-        if (day < 10) day = '0'+day;
-        var month = d.getMonth()+1;
-        if (month < 10) month = '0'+month;
-        var year = d.getFullYear();
-        if (format === 'YYYY-MM-DD') return year + '-' + month + '-' + day;
-        return date;
-    }
-
-    function getMonthParam() {
-        var endDate = new Date();
-        endDate.setDate(endDate.getDate()-1);
-        var startDate = new Date(endDate);
-        startDate.setDate(startDate.getDate()-29);
-
-        var dateStart = timestampToString(startDate.getTime(), 'YYYY-MM-DD');
-        var dateEnd = timestampToString(endDate.getTime(), 'YYYY-MM-DD');
-
-        return '&d1=' + dateStart + '&d2=' + dateEnd;
-    }
-
     function getBrand(request, callback) {
-        // const brand_url = `https://api.marketpapa.ru/api/brand_new?brand_id=${ request.brand_id }&brand_name=${ encodeURIComponent(request.brand_name) }${ getMonthParam() }`;
-        // callback(brand_url);
-        // return false;
-        fetch(new Request('https://api.marketpapa.ru/api/brand_new?brand_id=' + request.brand_id + '&brand_name=' + 
-                            encodeURIComponent(request.brand_name) /*+ '&plugin=true'*/ + getMonthParam(),
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Token ' + authToken
-                },
-                body: JSON.stringify({
-                    endRow: 100,
-                    filterModel: {},
-                    groupKeys: [],
-                    pivotCols: [],
-                    pivotMode: false,
-                    rowGroupCols: [],
-                    sortModel: [],
-                    startRow: 0,
-                    valueCols: []/*,
-                    access_token: accessToken*/
-                })
-            }
-        ))
+        brandRequest(request.brand_id, request.brand_name)
         .then(res => res.json())
         .then(res => {
             if (!res.rows || res.rows.length == 0)
@@ -583,28 +640,7 @@
     }
 
     function getSupplier(request, callback) {
-        fetch(new Request('https://api.marketpapa.ru/api/supplier_new?supplier_name=' + 
-                            encodeURIComponent(request.supplier_name) + '&plugin=true' + getMonthParam(),
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Token ' + authToken
-                },
-                body: JSON.stringify({
-                    endRow: 100,
-                    filterModel: {},
-                    groupKeys: [],
-                    pivotCols: [],
-                    pivotMode: false,
-                    rowGroupCols: [],
-                    sortModel: [],
-                    startRow: 0,
-                    valueCols: [],
-                    access_token: accessToken
-                })
-            }
-        ))
+        supplierRequest(request.supplier_id, request.supplier_name)
         .then(res => res.json())
         .then(res => {
             if (!res.rows || res.rows.length == 0)
@@ -667,14 +703,7 @@
     }
 
     function fetchCatalogItem(id, callback, idLength) {
-        fetch(new Request('https://api.marketpapa.ru/api/plugin/item/data/' + id, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Token ' + authToken
-            },
-            body: JSON.stringify({ access_token: accessToken })
-        }))
+        itemDataRequest(id)
         .then(res => res.json())
         .then(res => {
             catalogData = [
@@ -706,14 +735,9 @@
                 });
                 return true;
                 break;
-            case 'get_token':
-                getToken(function(res) {
-                    sendResponse(res);
-                });
-                return true;
-                break;
             case 'init_mp':
                 productId = request.id;
+                token = request.authToken;
                 authToken = request.authToken;
                 accessToken = request.accessToken;
                 _sendResponse = sendResponse;
@@ -725,6 +749,7 @@
                 return true;
                 break;
             case 'get_brand':
+                token = request.authToken;
                 authToken = request.authToken;
                 accessToken = request.accessToken;
                 getBrand(request, function(res) {
@@ -733,6 +758,7 @@
                 return true;
                 break;
             case 'get_supplier':
+                token = request.authToken;
                 authToken = request.authToken;
                 accessToken = request.accessToken;
                 getSupplier(request, function(res) {
@@ -742,6 +768,7 @@
                 break;
 
             case 'get_catalog_items':
+                token = request.authToken;
                 authToken = request.authToken;
                 accessToken = request.accessToken;
 
