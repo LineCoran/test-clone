@@ -727,12 +727,111 @@ const itemInfoRequest = product_id => {
         }
     }
 
+    function prepareDataBySize(data) {
+        let prepared = [], item, itemData, minPrice, maxPrice, avgCount, avgPrice, sumAvgPrice
+        Object.entries(data).forEach(([key, size]) => {
+            itemData = {}
+            minPrice = 0
+            maxPrice = 0
+            avgCount = 0
+            avgPrice = 0
+            sumAvgPrice = 0
+            size.data.map((dayData, index) => {
+                if (index === 0) {
+                    itemData = dayData
+                    avgCount++
+                    sumAvgPrice += dayData.avg_sale_price
+                } else {
+                    if (dayData.max_sale_price > maxPrice) maxPrice = dayData.max_sale_price
+                    if (dayData.min_sale_price < minPrice && minPrice !== 0) minPrice = dayData.min_sale_price
+                    avgCount++
+                    sumAvgPrice += dayData.avg_sale_price
+                    avgPrice = parseInt(sumAvgPrice / avgCount)
+                    itemData = {
+                        amount_fbo: itemData.amount_fbo + dayData.amount_fbo,
+                        amount_fbs: itemData.amount_fbs + dayData.amount_fbs,
+                        amount_lost_real_sales_fbo: itemData.amount_lost_real_sales_fbo + dayData.amount_lost_real_sales_fbo,
+                        amount_lost_real_sales_fbs: itemData.amount_lost_real_sales_fbs + dayData.amount_lost_real_sales_fbs,
+                        amount_lost_sales_fbo: itemData.amount_lost_sales_fbo + dayData.amount_lost_sales_fbo,
+                        amount_lost_sales_fbs: itemData.amount_lost_sales_fbs + dayData.amount_lost_sales_fbs,
+                        amount_real_sales_fbo: itemData.amount_real_sales_fbo + dayData.amount_real_sales_fbo,
+                        amount_real_sales_fbs: itemData.amount_real_sales_fbs + dayData.amount_real_sales_fbs,
+                        avg_sale_price: avgPrice,
+                        last_feedbacks: /*itemData.last_feedbacks + */dayData.last_feedbacks,
+                        last_qty_fbo: /*itemData.last_qty_fbo + */dayData.last_qty_fbo,
+                        last_qty_fbs: /*itemData.last_qty_fbs + */dayData.last_qty_fbs,
+                        last_sale_price_u: /*itemData.last_sale_price_u + */dayData.last_sale_price_u,
+                        lost_real_sales_fbo: itemData.lost_real_sales_fbo + dayData.lost_real_sales_fbo,
+                        lost_real_sales_fbs: itemData.lost_real_sales_fbs + dayData.lost_real_sales_fbs,
+                        lost_sales_fbo: itemData.lost_sales_fbo + dayData.lost_sales_fbo,
+                        lost_sales_fbs: itemData.lost_sales_fbs + dayData.lost_sales_fbs,
+                        max_sale_price: maxPrice,
+                        min_sale_price: minPrice,
+                        real_sales_fbo: itemData.real_sales_fbo + dayData.real_sales_fbo,
+                        real_sales_fbs: itemData.real_sales_fbs + dayData.real_sales_fbs,
+                        real_sales_rate_fbo: /*itemData.real_sales_rate_fbo + */dayData.real_sales_rate_fbo,
+                        real_sales_rate_fbs: /*itemData.real_sales_rate_fbs + */dayData.real_sales_rate_fbs,
+                        refunds_fbo: itemData.refunds_fbo + dayData.refunds_fbo,
+                        refunds_fbs: itemData.refunds_fbs + dayData.refunds_fbs,
+                        sales_fbo: itemData.sales_fbo + dayData.sales_fbo,
+                        sales_fbs: itemData.sales_fbs + dayData.sales_fbs,
+                        turnover_fbo: /*itemData.turnover_fbo + */dayData.turnover_fbo,
+                        turnover_fbs: /*itemData.turnover_fbs + */dayData.turnover_fbs
+                    }
+                }
+                return dayData
+            })
+            item = {
+                sizeName: size.sizeName,
+                sizeOrigName: size.sizeOrigName,
+                ...itemData
+            }
+            prepared = [
+                ...prepared,
+                item
+            ]
+        })
+        return prepared
+    }
+    
+    function bySizeParse(res) {
+        let bySize = {}
+        
+		Object.entries(res).forEach(([key, value]) => {
+			if (bySize.hasOwnProperty(value.sizeName)) {
+				bySize[value.sizeName] = {
+					...bySize[value.sizeName],
+					data: [ ...bySize[value.sizeName].data, ...value.data ]
+				}
+			} else {
+				bySize[value.sizeName] = {
+					sizeName: value.sizeName,
+					sizeOrigName: value.sizeOrigName,
+					data: value.data
+				}
+			}
+		})
+        return prepareDataBySize(bySize);
+    }
+
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         switch (request.msg) {
             case 'auth':
                 auth(request.phone, request.password, function(res) {
                     sendResponse(res);
                 });
+                return true;
+                break;
+            case 'get_item_data':
+                productId = request.id;
+                token = request.authToken;
+                itemDataRequest(productId)
+                .then(res => res.json())
+                .then(res => {
+                    let bySize = bySizeParse(res);
+                    sendResponse(bySize);
+                })
+                .catch(err => sendResponse(false))
                 return true;
                 break;
             case 'init_mp':

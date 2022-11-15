@@ -17,11 +17,14 @@ function formatNumber(number) {
     return number.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
 }
 
-var logoSrc, bgSrc;
+var logoSrc, bgSrc, imgCloseModal, loader;
 
 function loadAssets() {
 	logoSrc = chrome.runtime.getURL("images/logo.svg");
 	bgSrc = chrome.runtime.getURL("images/bg.png");
+	imgCloseModal = chrome.runtime.getURL("images/modal-close.png");
+	loader = chrome.runtime.getURL("images/loader-sm-primary.svg");
+	
 	var fa = document.createElement('style');
     fa.type = 'text/css';
     fa.textContent = `
@@ -513,11 +516,44 @@ function authClickListener() {
 
 var sizeModal;
 
-var sizeLinkListener = function(event) {
+function openModal() {
 	sizeModal.style.display = "block";
+	document.body.classList.add('marketpapa-widget-modal-open');
+}
+
+function closeModal() {
+	sizeModal.style.display = "none";
+	document.body.classList.remove('marketpapa-widget-modal-open');
+}
+
+var sizeLinkListener = function(event) {
+	var sizeTable = document.getElementById('mp-size-table');
+	if (sizeTable) {
+		sizeTable.classList.add('mp-loader');
+		sizeTable.setAttribute('style', `background-image: url(`+ loader +`);`);
+		sizeTable.innerHTML = '';
+	}
+
+	openModal();
 
 	var id = event.target.getAttribute('data-id');
-	// auth(id, phoneValue.trim(), passwordValue.trim());
+	var sizeModalLink = document.getElementById('mp-size-modal-link');
+	if (sizeModalLink) sizeModalLink.setAttribute('href', `https://marketpapa.ru/item/${ id }`);
+	
+	var sizeSwitchWrap = document.getElementById("mp-size-switch");
+    if (sizeSwitchWrap) sizeSwitchWrap.setAttribute('data-active', 'left');
+
+	chrome.runtime.sendMessage({
+		msg: 'get_item_data',
+		id: id,
+		authToken: authToken
+	}, function(response) {
+		if (sizeTable) {
+			sizeTable.classList.remove('mp-loader');
+			sizeTable.setAttribute('style', '');
+			sizeTable.innerHTML = mp_tableTemplate(mp_sizeTableColumns(true), response);
+		}
+	});
 }
 
 function sizeLinkClickListener() {
@@ -527,13 +563,13 @@ function sizeLinkClickListener() {
 	});
 }
 
-function initSizeTemplate(productId, target) {
+function initSizeTemplate(productId, target, popup) {
 	var div = document.createElement("div");
 	div.setAttribute("id", "marketpapa-widget-size-link-" + productId);
-	div.setAttribute("class", "marketpapa-widget-size-link");
+	div.setAttribute("class", `marketpapa-widget-size-link${ popup ? ' mp-size-popup-link' : ' mp-size-articul-link' }`);
 	div.setAttribute("data-id", productId);
 	div.setAttribute("style", "margin-top:20px;");
-	div.innerHTML = `<div>Аналитика по размеру</div>`;
+	div.innerHTML = `<div data-id="${ productId }">Аналитика по размеру</div>`;
 	
 	target[0].append(div);
 	
@@ -576,6 +612,7 @@ var productInterval = false, pageProductId;
 
 function initPopupMP(productId) {
 	var _wrapper, popupTarget, _popupTarget;
+	var sizeLinkTarget, _sizeLinkTarget;
 
 	if (popupProductId != productId && popupInterval) {
 		clearInterval(popupInterval);
@@ -598,12 +635,19 @@ function initPopupMP(productId) {
 			checkAccess(popupTarget, popupProductId);
 		}
 
+		document.querySelectorAll('.mp-size-popup-link').forEach(item => item.remove());
+
+		sizeLinkTarget = document.getElementsByClassName('product__sizes');
+		_sizeLinkTarget = document.getElementById("marketpapa-widget-size-link-" + productId);
+		if (sizeLinkTarget.length > 0 && !_sizeLinkTarget) {
+			initSizeTemplate(productId, sizeLinkTarget, true);
+		}
 	}, 1000);
 }
 
 function initMP(productId) {
 	var _wrapper, productTarget, _productTarget;
-	var sizeLinkTarget;
+	var sizeLinkTarget, _sizeLinkTarget;
 
 	if (pageProductId != productId && productInterval) {
 		clearInterval(productInterval);
@@ -628,10 +672,12 @@ function initMP(productId) {
 			checkAccess(productTarget, pageProductId);
 		}
 		
+		document.querySelectorAll('.mp-size-articul-link').forEach(item => item.remove());
+
 		sizeLinkTarget = document.getElementsByClassName('product-page__sizes-wrap');
 		_sizeLinkTarget = document.getElementById("marketpapa-widget-size-link-" + productId);
 		if (sizeLinkTarget.length > 0 && !_sizeLinkTarget) {
-			initSizeTemplate(productId, sizeLinkTarget);
+			initSizeTemplate(productId, sizeLinkTarget, false);
 		}
 	}, 1000);
 }
@@ -967,42 +1013,9 @@ function isSupplierPage(pathname) {
  * END SUPPLIER
  */
 
-/*
- * Start Size modal
- */
-
-function addSizeModal() {
-	sizeModal = document.createElement("div");
-	// sizeModal.setAttribute("id", "marketpapa-widget-size-modal");
-	sizeModal.setAttribute("class", "marketpapa-widget-modal");
-	sizeModal.innerHTML = `
-		<div class="marketpapa-widget-modal-content">
-			<span class="marketpapa-widget-modal-close">&times;</span>
-			<p>Some text in the Modal..</p>
-		</div>
-	`;
-	document.body.append(sizeModal);
-
-	var span = document.getElementsByClassName("close")[0];
-
-	span.onclick = function() {
-		sizeModal.style.display = "none";
-	}
-
-	window.onclick = function(event) {
-		if (event.target == sizeModal) {
-			sizeModal.style.display = "none";
-		}
-	}
-}
-
-addSizeModal();
-
-/*
- * End Size modal
- */
-
 loadAssets();
+
+mp_sizeModal();
 
 var mpLocation = document.location.pathname;
 // product page

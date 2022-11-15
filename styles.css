@@ -39,7 +39,7 @@
 	color: #6000C0;
 	text-decoration: none;
 }
-.marketpapa-wrapper .marketpapa-button {
+.marketpapa-button {
 	font-family: 'Montserrat', sans-serif;
 	line-height: 15px;
 	font-size: 12px;
@@ -52,7 +52,7 @@
 	text-align: center;
 	cursor: pointer;
 }
-.marketpapa-wrapper .marketpapa-button-outline {
+.marketpapa-button.marketpapa-button-outline {
 	background: transparent;
 	color: #222;
 }
@@ -68,9 +68,9 @@
 	padding-top: 8px;
 	border-top: 1px solid #e7e7e8;
 }
-.marketpapa-wrapper .marketpapa-button-primary {
-	padding-top: 10px;
-	padding-bottom: 10px;
+.marketpapa-button.marketpapa-button-primary {
+	color: #fff;
+	padding: 10px 30px;
 	font-weight: 700;
 	font-size: 16px;
 	line-height: 20px;
@@ -80,6 +80,11 @@
 	margin-top: 12px;
 	border: none;
 	background: linear-gradient(90deg, #6000C0 16.96%, #A900A2 113.75%);
+}
+.marketpapa-button.marketpapa-button-inline {
+	display: inline-block;
+	vertical-align: top;
+	width: auto;
 }
 .marketpapa-buttons {
 	/*margin-top: 4px;*/
@@ -312,10 +317,13 @@
 	text-decoration: underline;
 	cursor: pointer;
 }
+body.marketpapa-widget-modal-open {
+	overflow: hidden !important;
+}
 .marketpapa-widget-modal {
 	display: none;
 	position: fixed;
-	z-index: 1;
+	z-index: 9500;
 	left: 0;
 	top: 0;
 	width: 100%;
@@ -323,23 +331,32 @@
 	overflow: auto;
 	background-color: rgb(0,0,0);
 	background-color: rgba(0,0,0,0.4);
+	font-family: 'Montserrat';
 }
 .marketpapa-widget-modal-content {
 	position: relative;
 	background-color: #fefefe;
-	margin: auto;
-	padding: 0;
+	margin: 50px auto;
+	padding: 32px;
 	border: 1px solid #888;
 	width: 80%;
 	box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
 	animation-name: animatetop;
-	animation-duration: 0.4s
+	animation-duration: 0.4s;
+    border-radius: 10px;
 }
 .marketpapa-widget-modal-close {
-	color: #aaa;
-	float: right;
-	font-size: 28px;
-	font-weight: bold;
+	display: block;
+    width: 26px;
+    height: 26px;
+    background-position: center;
+    background-repeat: no-repeat;
+    box-shadow: -1px 1px 4px rgb(26 0 51 / 30%);
+    border-radius: 50%;
+    position: absolute;
+    top: -13px;
+    right: -13px;
+    background-color: #fff;
 }
 .marketpapa-widget-modal-close:hover,
 .marketpapa-widget-modal-close:focus {
@@ -351,4 +368,58 @@
 	from {top: -300px; opacity: 0}
 	to {top: 0; opacity: 1}
 }
+.marketpapa-widget-modal-header {
+	border-bottom: 2px solid #EFE5F9;
+	padding-bottom: 16px;
+	margin-bottom: 16px;
+}
+.marketpapa-widget-modal-body {}
+.marketpapa-widget-modal-footer {
+	margin-top: 16px;
+}
 /* /size */
+
+
+.mp-size-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 16px;
+}
+.mp-title {
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 24px;
+    margin-bottom: 10px;
+}
+.mp-actual-date {
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 17px;
+    color: #606569;
+}
+
+.marketpapa-table {
+	width: 100%;
+	font-size: 13px;
+	font-weight: 500;
+}
+.marketpapa-table th {
+	background: #F2F3F6;
+	height: 50px;
+	padding: 0 20px;
+	font-weight: 600;
+	text-align: left;
+}
+.marketpapa-table td {
+	padding: 25px 20px;
+}
+.marketpapa-table tr:nth-child(even) {background: #F9F9FB}
+.marketpapa-table tr:nth-child(odd) {background: #fff}
+
+.mp-loader {
+	min-height: 32px;
+	background-size: 32px;
+	background-position: center;
+	background-repeat: no-repeat;
+}
