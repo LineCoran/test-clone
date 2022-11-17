@@ -50,6 +50,35 @@ function loadAssets() {
 	document.head.appendChild(fa);
 }
 
+function setBrandSupplierLink(product_id) {
+	fetch(new Request('https://card.wb.ru/cards/detail?nm=' + product_id,
+		{ method: 'GET' }
+	))
+	.then(res => res.json())
+	.then(res => {
+		if (!res || !res.hasOwnProperty('data')) return false;
+		if (!res.data.hasOwnProperty('products')) return false;
+		if (!Array.isArray(res.data.products)) return false;
+		let card = res.data.products.filter(item => item.id === parseInt(product_id));
+		if (!card.length) return false;
+
+		var brandId = card[0].brandId;
+		var brand = card[0].brand;
+		var supplierId = card[0].supplierId;
+		
+		var brand_link = document.querySelector(`.mp-widget-brand-link[data-product-id="${ product_id }"]`)
+		if (brand_link) {
+			brand_link.setAttribute('href', `https://marketpapa.ru/brand?brand_id=${ brandId }&brand_name=${ encodeURIComponent(brand) }`);
+		}
+		
+		var supplier_link = document.querySelector(`.mp-widget-supplier-link[data-product-id="${ product_id }"]`)
+		if (supplier_link) {
+			supplier_link.setAttribute('href', `https://marketpapa.ru/supplier?supplier_id=${ supplierId }`);
+		}
+	})
+	.catch(error => {});
+}
+// seller-info__name href="/seller/126965"
 
 function initTemplate(productId, preview, target, mpData) {
 
@@ -131,7 +160,7 @@ function initTemplate(productId, preview, target, mpData) {
 
 	function mpFooterTemplate() {
 		if (!mpData) return '';
-		// console.log(mpData)
+		console.log(mpData)
 		var brandLink = !mpData.hasOwnProperty('brandName') ?
 			'https://marketpapa.ru/find'
 			: 'https://marketpapa.ru/brand?brand_name=' + encodeURIComponent(mpData.brandName);
@@ -141,10 +170,10 @@ function initTemplate(productId, preview, target, mpData) {
 		return `
 			<div class="marketpapa-footer">
 				<div class="marketpapa-footer-link">
-					<a href="` + brandLink + `" target="_blank">Аналитика по бренду</a>
+					<a href="` + brandLink + `" target="_blank" data-product-id="${ productId }" class="mp-widget-brand-link">Аналитика по бренду</a>
 				</div>
 				<div class="marketpapa-footer-link">
-					<a href="` + supplierLink + `" target="_blank">Аналитика по поставщику</a>
+					<a href="` + supplierLink + `" target="_blank" data-product-id="${ productId }" class="mp-widget-supplier-link">Аналитика по поставщику</a>
 				</div>
 				<a href="https://marketpapa.ru/item/` + productId + `" target="_blank" class="marketpapa-button marketpapa-button-primary">
 					Подробная аналитика
@@ -292,6 +321,7 @@ function initTemplate(productId, preview, target, mpData) {
 */
 	target.innerHTML = marketPapaTemplate();
 
+	setBrandSupplierLink(productId);
 
 
 	setChartFilterListeners();
@@ -469,7 +499,7 @@ function auth(id, phone, password) {
 		phone: phone,
 		password: password
 	}, function(response) {
-		// console.log(response);
+		console.log(response);
 		authToken = response;
     	document.cookie = "mpapa_plugin_token=" + response + '; path=/;';
 		getToken(function() { getData(false, id); });
@@ -577,6 +607,9 @@ function initSizeTemplate(productId, target, popup) {
 }
 
 function initEmptyTemplate(productId, target) {
+	var productWidget = document.getElementById("marketpapa-widget-" + productId);
+	if (productWidget) productWidget.remove();
+	
 	var div = document.createElement("div");
 	div.setAttribute("id", "marketpapa-widget-" + productId);
 	div.setAttribute("class", "marketpapa-widget marketpapa-widget-auth");

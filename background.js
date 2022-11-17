@@ -525,7 +525,7 @@ const itemInfoRequest = product_id => {
         .then(res => res.json())
         .then(res => {
             if (!res.hasOwnProperty('id')) {
-                _sendResponse({ ...parsedData })
+                _sendResponse({ ...parsedData, _info: res })
                 return false;
             }
             var infoObj = {
@@ -535,7 +535,7 @@ const itemInfoRequest = product_id => {
             _sendResponse({ ...infoObj, ...parsedData })
         })
         .catch(error => {
-            _sendResponse({ ...parsedData })
+            _sendResponse({ ...parsedData, _info: 'err' })
         })
     }
 
@@ -577,10 +577,10 @@ const itemInfoRequest = product_id => {
             if (!res.hasOwnProperty('errors'))
                 callback(res.user.token);
             else
-                callback(false);
+                callback({res:res});
         })
         .catch(error => {
-            callback(false);    
+            callback({'ERR': error});    
         })
     }
 
