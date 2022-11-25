@@ -117,12 +117,8 @@ const itemInfoRequest = product_id => {
  */
  const brandRequest = (brand_id, brand_name) => {
 	return fetch(
-        post(
-            `${ API_URL }brand_new?brand_id=${ brand_id }&brand_name=${ encodeURIComponent(brand_name) }&plugin=true${ getMonthParam() }`,
-            {
-                ...table_params,
-                sortModel: [{sort: "desc", colId: "amount_real_sales_fbo"}]
-            }
+        get(
+            `${ API_URL }brand_visualisation?brand_id=${ brand_id }&brand_name=${ encodeURIComponent(brand_name) }&plugin=true${ getMonthParam() }`
         )
     )
 }
@@ -134,12 +130,8 @@ const itemInfoRequest = product_id => {
  */
  const supplierRequest = (supplier_id, supplier_name) => {
 	return fetch(
-        post(
-            `${ API_URL }supplier_new?supplier_id=${ supplier_id }&supplier_name=${ encodeURIComponent(supplier_name) }&plugin=true${ getMonthParam() }`,
-            {
-                ...table_params,
-                sortModel: [{sort: "desc", colId: "amount_real_sales_fbo"}]
-            }
+        get(
+            `${ API_URL }supplier_visualisation?supplier_id=${ supplier_id }&supplier_name=${ encodeURIComponent(supplier_name) }&plugin=true${ getMonthParam() }`
         )
     )
 }
@@ -610,14 +602,12 @@ const itemInfoRequest = product_id => {
                 _avg__last_sale_price_u = 0; // Средняя цена
             // var priceCount = 0;
             res.rows.map(item => {
-                amount_real_sales_fbo_total = item.amount_real_sales_fbo_total;
-                amount_lost_sales_fbo += item.amount_lost_sales_fbo;
-                real_sales_fbo_total = item.real_sales_fbo_total;
-                sales_fbo_total = item.sales_fbo_total;
-                last_qty_fbo_total = item.last_qty_fbo_total;
-                if (item.last_sale_price_u) {
-                    _sum__last_sale_price_u += item.last_sale_price_u;
-                }
+                amount_real_sales_fbo_total += item.amount_real_sales_fbo;
+                amount_lost_sales_fbo += item.lost_revenue_fbo;
+                real_sales_fbo_total += item.real_sales_fbo;
+                sales_fbo_total += item.sales_fbo;
+                last_qty_fbo_total = item.start_fbo_amount;
+                _sum__last_sale_price_u += item.avg_price;
                 // priceCount += 1;
 
                 return item;
@@ -665,14 +655,12 @@ const itemInfoRequest = product_id => {
                 _avg__last_sale_price_u = 0; // Средняя цена
             // var priceCount = 0;
             res.rows.map(item => {
-                amount_real_sales_fbo_total = item.amount_real_sales_fbo_total;
-                amount_lost_sales_fbo += item.amount_lost_sales_fbo;
-                real_sales_fbo_total = item.real_sales_fbo_total;
-                sales_fbo_total = item.sales_fbo_total;
-                last_qty_fbo_total = item.last_qty_fbo_total;
-                if (item.last_sale_price_u) {
-                    _sum__last_sale_price_u += item.last_sale_price_u;
-                }
+                amount_real_sales_fbo_total += item.amount_real_sales_fbo;
+                amount_lost_sales_fbo += item.lost_revenue_fbo;
+                real_sales_fbo_total += item.real_sales_fbo;
+                sales_fbo_total += item.sales_fbo;
+                last_qty_fbo_total = item.start_fbo_amount;
+                _sum__last_sale_price_u += item.avg_price;
                 // priceCount += 1;
 
                 return item;
