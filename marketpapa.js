@@ -518,7 +518,7 @@ function getAuthTpl(productId) {
 				Market Papa 
 			</div>
 			<div class="marketpapa-auth-form">
-				<input type="text" name="phone" placeholder="Номер телефона" class="marketpapa-auth-input" />
+				<input type="text" name="phone" placeholder="Номер телефона (+7)" class="marketpapa-auth-input" />
 				<input type="password" name="password" placeholder="Пароль" class="marketpapa-auth-input" />
 			</div>
 			<button class="marketpapa-button marketpapa-button-primary marketpapa-button-auth" data-id="`+productId+`">Войти</button>
@@ -792,7 +792,7 @@ function initBrandTemplate() {
 					</div>
 					<div class="marketpapa-brand-data-row">
 						<span class="marketpapa-brand-label">Упущ. выручка</span>
-						<span class="marketpapa-brand-value">${ toRuble(brandData.amount_lost_real_sales_fbo) } ₽</span>
+						<span class="marketpapa-brand-value">${ toRuble(brandData.amount_lost_sales_fbo) } ₽</span>
 					</div>
 					<div class="marketpapa-brand-data-row">
 						<span class="marketpapa-brand-label">Продажи</span>
@@ -962,7 +962,7 @@ function initSupplierTemplate() {
 					</div>
 					<div class="marketpapa-brand-data-row">
 						<span class="marketpapa-brand-label">Упущ. выручка</span>
-						<span class="marketpapa-brand-value">${ toRuble(supplierData.amount_lost_real_sales_fbo) } ₽</span>
+						<span class="marketpapa-brand-value">${ toRuble(supplierData.amount_lost_sales_fbo) } ₽</span>
 					</div>
 					<div class="marketpapa-brand-data-row">
 						<span class="marketpapa-brand-label">Продажи</span>

@@ -12,15 +12,16 @@ function timestampToString(date, format) {
     return date;
 }
 
-function getMonthParam() {
+function getMonthParam(endpoint = false) {
     var endDate = new Date();
-    endDate.setDate(endDate.getDate()-1);
     var startDate = new Date(endDate);
     startDate.setDate(startDate.getDate()-29);
 
     var dateStart = timestampToString(startDate.getTime(), 'YYYY-MM-DD');
     var dateEnd = timestampToString(endDate.getTime(), 'YYYY-MM-DD');
 
+    if (endpoint == 'item/data')
+        return '?start_date=' + dateStart + '&end_date=' + dateEnd;
     return '&d1=' + dateStart + '&d2=' + dateEnd;
 }
 /**
@@ -105,7 +106,7 @@ const itemInfoRequest = product_id => {
  */
  const itemDataRequest = product_id => {
 	return fetch(
-        post(`${ API_URL }plugin/item/data/${ product_id }`, {})
+        post(`${ API_URL }plugin/item/data/${ product_id }${ getMonthParam('item/data') }`, {})
     )
 }
 
@@ -118,7 +119,10 @@ const itemInfoRequest = product_id => {
 	return fetch(
         post(
             `${ API_URL }brand_new?brand_id=${ brand_id }&brand_name=${ encodeURIComponent(brand_name) }&plugin=true${ getMonthParam() }`,
-            table_params
+            {
+                ...table_params,
+                sortModel: [{sort: "desc", colId: "amount_real_sales_fbo"}]
+            }
         )
     )
 }
@@ -132,7 +136,10 @@ const itemInfoRequest = product_id => {
 	return fetch(
         post(
             `${ API_URL }supplier_new?supplier_id=${ supplier_id }&supplier_name=${ encodeURIComponent(supplier_name) }&plugin=true${ getMonthParam() }`,
-            table_params
+            {
+                ...table_params,
+                sortModel: [{sort: "desc", colId: "amount_real_sales_fbo"}]
+            }
         )
     )
 }
@@ -595,7 +602,7 @@ const itemInfoRequest = product_id => {
             // % Выкупа
             
             var amount_real_sales_fbo_total = 0, // Выручка
-                amount_lost_real_sales_fbo = 0, // Упущ. выручка
+                amount_lost_sales_fbo = 0, // Упущ. выручка по заказам
                 real_sales_fbo_total = 0, // Продажи
                 sales_fbo_total = 0, // Заказы
                 last_qty_fbo_total = 0, // Остаток
@@ -604,7 +611,7 @@ const itemInfoRequest = product_id => {
             // var priceCount = 0;
             res.rows.map(item => {
                 amount_real_sales_fbo_total = item.amount_real_sales_fbo_total;
-                amount_lost_real_sales_fbo += item.amount_lost_real_sales_fbo;
+                amount_lost_sales_fbo += item.amount_lost_sales_fbo;
                 real_sales_fbo_total = item.real_sales_fbo_total;
                 sales_fbo_total = item.sales_fbo_total;
                 last_qty_fbo_total = item.last_qty_fbo_total;
@@ -626,7 +633,7 @@ const itemInfoRequest = product_id => {
             var resData = {
                 ...res,
                 amount_real_sales_fbo_total: amount_real_sales_fbo_total,
-                amount_lost_real_sales_fbo: amount_lost_real_sales_fbo,
+                amount_lost_sales_fbo: amount_lost_sales_fbo,
                 real_sales_fbo_total: real_sales_fbo_total,
                 sales_fbo_total: sales_fbo_total,
                 last_qty_fbo_total: last_qty_fbo_total,
@@ -650,7 +657,7 @@ const itemInfoRequest = product_id => {
             // % Выкупа
             
             var amount_real_sales_fbo_total = 0, // Выручка
-                amount_lost_real_sales_fbo = 0, // Упущ. выручка
+                amount_lost_sales_fbo = 0, // Упущ. выручка
                 real_sales_fbo_total = 0, // Продажи
                 sales_fbo_total = 0, // Заказы
                 last_qty_fbo_total = 0, // Остаток
@@ -658,11 +665,11 @@ const itemInfoRequest = product_id => {
                 _avg__last_sale_price_u = 0; // Средняя цена
             // var priceCount = 0;
             res.rows.map(item => {
-                amount_real_sales_fbo_total += item.amount_real_sales_fbo;
-                amount_lost_real_sales_fbo += item.amount_lost_real_sales_fbo;
-                real_sales_fbo_total += item.real_sales_fbo;
-                sales_fbo_total += item.sales_fbo;
-                last_qty_fbo_total = item.last_qty_fbo;
+                amount_real_sales_fbo_total = item.amount_real_sales_fbo_total;
+                amount_lost_sales_fbo += item.amount_lost_sales_fbo;
+                real_sales_fbo_total = item.real_sales_fbo_total;
+                sales_fbo_total = item.sales_fbo_total;
+                last_qty_fbo_total = item.last_qty_fbo_total;
                 if (item.last_sale_price_u) {
                     _sum__last_sale_price_u += item.last_sale_price_u;
                 }
@@ -681,7 +688,7 @@ const itemInfoRequest = product_id => {
             var resData = {
                 ...res,
                 amount_real_sales_fbo_total: amount_real_sales_fbo_total,
-                amount_lost_real_sales_fbo: amount_lost_real_sales_fbo,
+                amount_lost_sales_fbo: amount_lost_sales_fbo,
                 real_sales_fbo_total: real_sales_fbo_total,
                 sales_fbo_total: sales_fbo_total,
                 last_qty_fbo_total: last_qty_fbo_total,
