@@ -51,6 +51,7 @@ function loadAssets() {
 }
 
 function setBrandSupplierLink(product_id) {
+	return false;
 	fetch(new Request('https://card.wb.ru/cards/detail?nm=' + product_id,
 		{ method: 'GET' }
 	))
@@ -160,13 +161,12 @@ function initTemplate(productId, preview, target, mpData) {
 
 	function mpFooterTemplate() {
 		if (!mpData) return '';
-		console.log(mpData)
 		var brandLink = !mpData.hasOwnProperty('brandName') ?
 			'https://marketpapa.ru/find'
-			: 'https://marketpapa.ru/brand?brand_name=' + encodeURIComponent(mpData.brandName);
+			: `https://marketpapa.ru/brand?brand_id=${ mpData.brandId }&brand_name=${ encodeURIComponent(mpData.brandName) }`;
 		var supplierLink = !mpData.hasOwnProperty('supplierName') ?
 			'https://marketpapa.ru/find'
-			: 'https://marketpapa.ru/supplier?supplier_name=' + encodeURIComponent(mpData.supplierName);
+			: `https://marketpapa.ru/supplier?supplier_id=${ mpData.supplierId }&supplier_name=${ encodeURIComponent(mpData.supplierName) }`;
 		return `
 			<div class="marketpapa-footer">
 				<div class="marketpapa-footer-link">
@@ -338,31 +338,32 @@ function initTemplate(productId, preview, target, mpData) {
 
 }
 
-function initCatalogTemplate(response) {
+function initCatalogTemplate(product) {
 	return tpl = `
 		<div class="marketpapa-catalog-item">
 			<div>
 				<img src="`+logoSrc+`" class="marketpapa-catalog-logo" />
 			</div>
 			<div class="marketpapa-catalog-item-info">
-				<div class="marketpapa-catalog-info-line"><span>Выручка</span><span>` + toRuble(response.amount) + ` ₽</span></div>
-				<div class="marketpapa-catalog-info-line"><span>Продажи</span><span>` + formatNumber(response.real_sales) + ` шт</span></div>
-				<div class="marketpapa-catalog-info-line"><span>Остаток</span><span>` + formatNumber(response.last_qty) + ` шт</span></div>
+				<div class="marketpapa-catalog-info-line"><span>Выручка</span><span>` + toRuble(product.amount_real_sales_fbo) + ` ₽</span></div>
+				<div class="marketpapa-catalog-info-line"><span>Продажи</span><span>` + formatNumber(product.real_sales_fbo) + ` шт</span></div>
+				<div class="marketpapa-catalog-info-line"><span>Остаток</span><span>` + formatNumber(product.last_qty_fbo) + ` шт</span></div>
 			</div>
 		</div>
 	`;
 }
 
-function _initCatalog(id) {
-	var card = document.querySelectorAll('.product-card[data-popup-nm-id="'+id+'"] .product-card__main');
+function _initCatalog(product) {
+	var card = document.querySelectorAll('.product-card[data-popup-nm-id="'+product.product_id+'"] .product-card__main');
 	if (!card || card.length == 0) return false;
 	// console.log('initCatalog', id)
 
 	var div = document.createElement("div");
-	div.setAttribute("id", "marketpapa-catalog-widget-" + id);
+	div.setAttribute("id", "marketpapa-catalog-widget-" + product.product_id);
 	div.setAttribute("class", "marketpapa-catalog-widget");
+	div.innerHTML = initCatalogTemplate(product);
 
-	var targetDiv = document.getElementById('marketpapa-catalog-widget-' + id);
+	var targetDiv = document.getElementById('marketpapa-catalog-widget-' + product.product_id);
 	if (targetDiv && targetDiv.length > 0) {
 		// console.log(targetDiv);
 		targetDiv.remove();
@@ -374,7 +375,13 @@ function _initCatalog(id) {
 
 var authToken = '', accessToken = '';
 
-function initCatalog(id) {
+function initCatalog(products) {
+	for (var i=0; i<products.length; i++) {
+		_initCatalog(products[i]);
+	}
+}
+
+function initCatalog1(id) {
 	// console.log('get_catalog_item ' + id);
 	// get_catalog_item
 
@@ -441,7 +448,7 @@ function getData(target, id) {
 		authToken: authToken,
 		accessToken: accessToken
 	}, function(response) {
-		// console.log(response);
+		console.log(response);
 		if (!response.ready) return false;
 
 		var _target = document.getElementById('marketpapa-widget-' + id);
@@ -726,11 +733,11 @@ function initCatalogItemTemplate(productId, target) {
 	authClickListener();
 }
 */
-function renderCatalogWidgets(catalogIds) {
+/*function renderCatalogWidgets(catalogIds) {
 	for (var i=0; i<catalogIds.length; i++) {
 		initCatalog(catalogIds[i]);
 	}
-}
+}*/
 
 function isDetailPage(pathname) {
 	var matches = pathname.replace(/^\//, '').match(/^catalog\/\d+/g)
@@ -743,12 +750,15 @@ function isDetailPage(pathname) {
 
 function isCatalogPage(pathname) {
 	var matches = pathname.replace(/^\//, '').match(/^catalog\/[A-Za-z]/g);
-	return matches && matches.length > 0;
+	var promotions = pathname.replace(/^\//, '').match(/^promotions\/[A-Za-z]/g);
+	
+	return matches && matches.length > 0 || promotions && promotions.length > 0;
 }
 
 var catalogIds = [];
 
 function getCatalogIds(pathname) {
+	catalogIds = [];
 	var id, idMatch;
 	document.querySelectorAll('#catalog-content .product-card').forEach(function(item) {
 		id = item.getAttribute('id');
@@ -1051,6 +1061,7 @@ loadAssets();
 mp_sizeModal();
 
 var mpLocation = document.location.pathname;
+var catalogLocation = document.location.pathname;
 // product page
 var prevProductId = '',
 	productId = isDetailPage(mpLocation);
@@ -1066,6 +1077,42 @@ isBrandPage(mpLocation);
 isSupplierPage(mpLocation);
 
 var mpPreviewWrap, mpPreviewId, _mpPreviewId, _mpPrevieMatches;
+
+var catalogLocationSearch = false;
+
+console.log('идет несколько запросов сразу');
+function checkCatalogIds() {
+	console.log('checkCatalogIds');
+	catalogLocation = document.location.pathname;
+	catalogLocationSearch = document.location.search;
+	// console.log(document.location.pathname, catalogLocationSearch);
+	var lastPageIds = [ ...catalogIds ];
+	var catalogLoadInterval = setInterval(function() {
+		getCatalogIds(mpLocation);
+		// console.log(lastPageIds, catalogIds);
+		console.log('int', lastPageIds.length, catalogIds.length, JSON.stringify(lastPageIds) !== JSON.stringify(catalogIds));
+		if (catalogIds.length > 0 && JSON.stringify(lastPageIds) !== JSON.stringify(catalogIds)) {
+			lastPageIds = [ ...catalogIds ];
+			console.log('aaaaa');
+			clearInterval(catalogLoadInterval);
+			if (isAuth()) {
+				chrome.runtime.sendMessage({
+					msg: 'get_catalog_items',
+					id: catalogIds,
+					authToken: authToken,
+					accessToken: accessToken
+				}, function(response) {
+					// console.log('get_catalog_items', response);
+					if (!response || !Array.isArray(response)) {
+						return false;
+					}
+	
+					initCatalog(response);
+				});
+			}
+		}
+	}, 1000);
+}
 
 var checkLocationInterval = setInterval(function() {
 
@@ -1085,6 +1132,11 @@ var checkLocationInterval = setInterval(function() {
 		}
 	}
 
+	// listen catalog page
+	if (isCatalogPage(catalogLocation) && (document.location.pathname != catalogLocation || document.location.search !== catalogLocationSearch)) {
+		checkCatalogIds();
+	}
+
 	if (document.location.pathname != mpLocation) {
 		mpLocation = document.location.pathname;
 		// listen product page
@@ -1102,23 +1154,7 @@ var checkLocationInterval = setInterval(function() {
 
 		// listen supplier page
 		isSupplierPage(mpLocation);
-	}
 
-	// listen catalog page
-	if (isCatalogPage(mpLocation) && catalogIds.length === 0
-			|| document.location.pathname != mpLocation) {
-		getCatalogIds(mpLocation);
-		if (catalogIds.length > 0) {
-			chrome.runtime.sendMessage({
-				msg: 'get_catalog_items',
-				id: catalogIds,
-				authToken: authToken,
-				accessToken: accessToken
-			}, function(response) {
-				// console.log('get_catalog_items', response);
-			});
-			// TODO // renderCatalogWidgets(catalogIds);
-		}
 	}
 
 	// переход из товара в каталог - не рендерит

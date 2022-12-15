@@ -1,3 +1,25 @@
+
+if (!chrome.cookies) {
+	chrome.cookies = chrome.experimental.cookies;
+}
+var wbCookies = {};
+chrome.cookies.getAll({}, (cookies) => {
+    // console.log('cookies', cookies);
+    var currentC;
+    for (var i = 0; i < cookies.length; i++) {
+        currentC = cookies[i];
+        if (currentC.name == 'x-supplier-id') {
+            // console.log('cookie 1 = ', currentC.name, currentC.value);
+            wbCookies[currentC.name] = currentC.value;
+        }
+        if (currentC.name == 'WILDAUTHNEW_V3') {
+            // console.log('cookie 2 = ', currentC.name, currentC.value);
+            wbCookies[currentC.name] = currentC.value;
+        }
+    }
+    console.log(wbCookies);
+});
+
 /**
  * START UTILS
  */
@@ -107,6 +129,19 @@ const itemInfoRequest = product_id => {
  const itemDataRequest = product_id => {
 	return fetch(
         post(`${ API_URL }plugin/item/data/${ product_id }${ getMonthParam('item/data') }`, {})
+    )
+}
+
+/**
+ * @param {array} products
+ * @returns {Promise<Response>}
+ */
+const catalogItemsRequest = products => {
+    var params = {
+        products: products
+    };
+	return fetch(
+        post(`${ API_URL }plugin/item_list`, params)
     )
 }
 
@@ -528,7 +563,9 @@ const itemInfoRequest = product_id => {
                 return false;
             }
             var infoObj = {
+                brandId: res.brand.id,
                 brandName: res.brand.name,
+                supplierId: res.supplier.id,
                 supplierName: res.supplier.name
             };
             _sendResponse({ ...infoObj, ...parsedData })
@@ -697,29 +734,15 @@ const itemInfoRequest = product_id => {
         }
     }
 
-    function fetchCatalogItem(id, callback, idLength) {
-        itemDataRequest(id)
+    function getCatalogItemsInfo(ids, callback) {
+        catalogItemsRequest(ids)
         .then(res => res.json())
         .then(res => {
-            catalogData = [
-                ...catalogData,
-                { iddd: id, data: res }
-            ];
-            waitCatalogData(callback, idLength);
+            callback(res);
         })
         .catch(error => {
-            catalogData = [
-                ...catalogData,
-                { id: id, data: error }
-            ];
-            waitCatalogData(callback, idLength);
+            callback('error', error);
         })
-    }
-
-    function getCatalogItemsInfo(ids, callback) {
-        for (var i=0; i<ids.length; i++) {
-            fetchCatalogItem(ids[i], callback, ids.length);
-        }
     }
 
     function prepareDataBySize(data) {
@@ -865,11 +888,11 @@ const itemInfoRequest = product_id => {
                 token = request.authToken;
                 authToken = request.authToken;
                 accessToken = request.accessToken;
-
+                console.log(request.id);                
                 // sendResponse(request.id);
-                // getCatalogItemsInfo(request.id, function(res) {
-                //     sendResponse(res);
-                // });
+                getCatalogItemsInfo(request.id, function(res) {
+                    sendResponse(res);
+                });
 
                 return true;
                 break;

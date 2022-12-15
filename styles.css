@@ -237,14 +237,9 @@
 	margin-top: 15px;
 }
 .marketpapa-catalog-item {
-	display: flex;
-	align-items: center;
 }
 .marketpapa-catalog-item-info {
-	border-left: 2px solid #babcbf;
-	padding-left: 12px;
-	margin-left: 12px;
-	flex-grow: 1;
+	margin-top: 10px;
 }
 .marketpapa-catalog-info-line {
 	display: flex;
