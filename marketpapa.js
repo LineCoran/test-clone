@@ -83,7 +83,6 @@ function setBrandSupplierLink(product_id) {
 
 function initTemplate(productId, preview, target, mpData) {
 
-	// console.log('initTemplate')
 
 	var period = 'month';
 	var filters = ['revenue'];
@@ -212,7 +211,6 @@ function initTemplate(productId, preview, target, mpData) {
 	    var _colors = [];
 	    var _yaxis = [];
 	    var axis;
-	    // console.log(mpData);
 	    if (filters.includes('revenue')) {
 	    	axis = mpData.revenueChart.axis;
 	    	axis.labels.formatter = function(val) { return toRuble(val); };
@@ -312,7 +310,6 @@ function initTemplate(productId, preview, target, mpData) {
 
 /*
 	var div = document.createElement("div");
-	console.log(preview)
 	div.setAttribute("id", "marketpapa-widget" + preview);
 	div.setAttribute("class", "marketpapa-widget");
 	div.innerHTML = marketPapaTemplate();
@@ -330,7 +327,6 @@ function initTemplate(productId, preview, target, mpData) {
 		item.addEventListener('click', function(event) { onPeriodFilterClick(event, item); });
 	});
 
-	// console.log(document.querySelectorAll('.marketpapa-wrapper'));
 
 	document.getElementById("marketpapa-logo" + preview).setAttribute('src', logoSrc);
 
@@ -356,7 +352,6 @@ function initCatalogTemplate(product) {
 function _initCatalog(product) {
 	var card = document.querySelectorAll('.product-card[data-popup-nm-id="'+product.product_id+'"] .product-card__main');
 	if (!card || card.length == 0) return false;
-	// console.log('initCatalog', id)
 
 	var div = document.createElement("div");
 	div.setAttribute("id", "marketpapa-catalog-widget-" + product.product_id);
@@ -365,7 +360,6 @@ function _initCatalog(product) {
 
 	var targetDiv = document.getElementById('marketpapa-catalog-widget-' + product.product_id);
 	if (targetDiv && targetDiv.length > 0) {
-		// console.log(targetDiv);
 		targetDiv.remove();
 		// document.getElementById('marketpapa-catalog-widget-' + id).innerHTML = '';
 	}
@@ -382,7 +376,6 @@ function initCatalog(products) {
 }
 
 function initCatalog1(id) {
-	// console.log('get_catalog_item ' + id);
 	// get_catalog_item
 
 	chrome.runtime.sendMessage({
@@ -391,13 +384,11 @@ function initCatalog1(id) {
 		authToken: authToken,
 		accessToken: accessToken
 	}, function(response) {
-		// console.log('get_catalog_item ' + id, response);
 		_initCatalog(id);
 		/*
 		var initInterval = setInterval(function() {
 			// clearInterval(initInterval);
 			if (!document.getElementById('marketpapa-catalog-widget-' + id)) {
-				console.log('----------------------');
 				_initCatalog(id);
 				document.getElementById('marketpapa-catalog-widget-' + id).innerHTML = initCatalogTemplate(response);
 			}
@@ -414,7 +405,6 @@ function initCatalog1(id) {
 	}, 1000);*/
 }
 
-// console.log(document.cookie);
 
 function getCookie(name) {
 	const value = '; ' + document.cookie;
@@ -440,7 +430,6 @@ function isAccessTokenExists() {
 }
 
 function getData(target, id) {
-	// console.log('getData', id, target);
 	
 	chrome.runtime.sendMessage({
 		msg: 'init_mp',
@@ -448,7 +437,6 @@ function getData(target, id) {
 		authToken: authToken,
 		accessToken: accessToken
 	}, function(response) {
-		console.log(response);
 		if (!response.ready) return false;
 
 		var _target = document.getElementById('marketpapa-widget-' + id);
@@ -463,7 +451,6 @@ function getData(target, id) {
 					clearInterval(initInterval);
 					
 					target = document.getElementsByClassName('same-part-kt__delivery-advantages')[0];
-					console.log(target)
 					initTemplate(productId, preview, target, response);
 				}
 			}, 1000);
@@ -477,7 +464,6 @@ function getToken(callback) {
 	chrome.runtime.sendMessage({ msg: 'get_token' }, function(response) {
 		accessToken = response;
     	document.cookie = "marketPapaAccessToken=" + response;
-    	// console.log('getToken');
 		callback();
 	});
 }
@@ -485,17 +471,14 @@ function getToken(callback) {
 function checkAccess(target, id) {
 	if (isAuth()) {
 		if (isAccessTokenExists()) {
-			// console.log('ALL READY')
 			// get data and render
 			getData(target, id);
 		} else {
-			// console.log('NO TOKEN')
 			getToken(function() { getData(target, id); });
 
 			// get data and render
 		}
 	} else {
-		// console.log('NOT AUTH')
 		// render login
 	}
 }
@@ -506,7 +489,6 @@ function auth(id, phone, password) {
 		phone: phone,
 		password: password
 	}, function(response) {
-		console.log(response);
 		authToken = response;
     	document.cookie = "mpapa_plugin_token=" + response + '; path=/;';
 		getToken(function() { getData(false, id); });
@@ -664,7 +646,6 @@ function initPopupMP(productId) {
 		_popupTarget = document.getElementById("marketpapa-widget-" + productId);
 		if (popupTarget.length > 0 && !_popupTarget) {
 			popupTarget = popupTarget[0];
-			// console.log('popup', _popupTarget);
 			initPopupEmptyTemplate(productId, popupTarget);
 			document.getElementById("marketpapa-logo-" + productId).setAttribute('src', logoSrc);
 			_wrapper = document.getElementsByClassName('marketpapa-wrapper');
@@ -701,7 +682,6 @@ function initMP(productId) {
 		_productTarget = document.getElementById("marketpapa-widget-" + productId);
 		if (productTarget.length > 0 && !_productTarget) {
 			productTarget = productTarget[0];
-			// console.log('aa', _productTarget);
 			initEmptyTemplate(productId, productTarget);
 			document.getElementById("marketpapa-logo-" + productId).setAttribute('src', logoSrc);
 			_wrapper = document.getElementsByClassName('marketpapa-wrapper');
@@ -751,7 +731,6 @@ function isDetailPage(pathname) {
 function isCatalogPage(pathname) {
 	var matches = pathname.replace(/^\//, '').match(/^catalog\/[A-Za-z]/g);
 	var promotions = pathname.replace(/^\//, '').match(/^promotions\/[A-Za-z]/g);
-	
 	return matches && matches.length > 0 || promotions && promotions.length > 0;
 }
 
@@ -787,7 +766,6 @@ function initBrandTemplate() {
 		return false;
 
 	target = target[0];
-	// console.log(target.outerHTML);
 
 	var brand_tpl = `
 		<div id="marketpapa-brand-widget" class="marketpapa-brand-widget">
@@ -916,17 +894,14 @@ function isBrandPage(pathname) {
 
 				if (isAuth()) {
 					if (isAccessTokenExists()) {
-						// console.log('ALL READY')
 						// get data and render
 						getBrandData(brandName);
 					} else {
-						// console.log('NO TOKEN')
 						// getToken(function() { getData(target, id); });
 
 						// get data and render
 					}
 				} else {
-					// console.log('NOT AUTH')
 					// render login
 				}
 			}
@@ -1079,21 +1054,15 @@ isSupplierPage(mpLocation);
 var mpPreviewWrap, mpPreviewId, _mpPreviewId, _mpPrevieMatches;
 
 var catalogLocationSearch = false;
-
-console.log('идет несколько запросов сразу');
+var lastPageIds = [];
 function checkCatalogIds() {
-	console.log('checkCatalogIds');
 	catalogLocation = document.location.pathname;
 	catalogLocationSearch = document.location.search;
-	// console.log(document.location.pathname, catalogLocationSearch);
-	var lastPageIds = [ ...catalogIds ];
+	lastPageIds = [ ...catalogIds ];
 	var catalogLoadInterval = setInterval(function() {
 		getCatalogIds(mpLocation);
-		// console.log(lastPageIds, catalogIds);
-		console.log('int', lastPageIds.length, catalogIds.length, JSON.stringify(lastPageIds) !== JSON.stringify(catalogIds));
 		if (catalogIds.length > 0 && JSON.stringify(lastPageIds) !== JSON.stringify(catalogIds)) {
 			lastPageIds = [ ...catalogIds ];
-			console.log('aaaaa');
 			clearInterval(catalogLoadInterval);
 			if (isAuth()) {
 				chrome.runtime.sendMessage({
@@ -1102,7 +1071,6 @@ function checkCatalogIds() {
 					authToken: authToken,
 					accessToken: accessToken
 				}, function(response) {
-					// console.log('get_catalog_items', response);
 					if (!response || !Array.isArray(response)) {
 						return false;
 					}
@@ -1133,7 +1101,7 @@ var checkLocationInterval = setInterval(function() {
 	}
 
 	// listen catalog page
-	if (isCatalogPage(catalogLocation) && (document.location.pathname != catalogLocation || document.location.search !== catalogLocationSearch)) {
+	if (isCatalogPage(document.location.pathname) && (document.location.pathname != catalogLocation || document.location.search !== catalogLocationSearch)) {
 		checkCatalogIds();
 	}
 

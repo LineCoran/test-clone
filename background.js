@@ -4,20 +4,16 @@ if (!chrome.cookies) {
 }
 var wbCookies = {};
 chrome.cookies.getAll({}, (cookies) => {
-    // console.log('cookies', cookies);
     var currentC;
     for (var i = 0; i < cookies.length; i++) {
         currentC = cookies[i];
         if (currentC.name == 'x-supplier-id') {
-            // console.log('cookie 1 = ', currentC.name, currentC.value);
             wbCookies[currentC.name] = currentC.value;
         }
         if (currentC.name == 'WILDAUTHNEW_V3') {
-            // console.log('cookie 2 = ', currentC.name, currentC.value);
             wbCookies[currentC.name] = currentC.value;
         }
     }
-    console.log(wbCookies);
 });
 
 /**
@@ -888,7 +884,6 @@ const catalogItemsRequest = products => {
                 token = request.authToken;
                 authToken = request.authToken;
                 accessToken = request.accessToken;
-                console.log(request.id);                
                 // sendResponse(request.id);
                 getCatalogItemsInfo(request.id, function(res) {
                     sendResponse(res);
