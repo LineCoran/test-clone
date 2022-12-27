@@ -729,7 +729,7 @@ function isDetailPage(pathname) {
 }
 
 function isCatalogPage(pathname) {
-	var matches = pathname.replace(/^\//, '').match(/^catalog\/[A-Za-z]/g);
+	var matches = pathname.replace(/^\//, '').match(/^catalog\/([A-Za-z]|0)/g);
 	var promotions = pathname.replace(/^\//, '').match(/^promotions\/[A-Za-z]/g);
 	return matches && matches.length > 0 || promotions && promotions.length > 0;
 }
