@@ -1,4 +1,8 @@
-
+    // ,
+	// "permissions": [
+	// 	"cookies"
+	// ]
+/*
 if (!chrome.cookies) {
 	chrome.cookies = chrome.experimental.cookies;
 }
@@ -15,7 +19,7 @@ chrome.cookies.getAll({}, (cookies) => {
         }
     }
 });
-
+*/
 /**
  * START UTILS
  */

@@ -350,7 +350,7 @@ function initCatalogTemplate(product) {
 }
 
 function _initCatalog(product) {
-	var card = document.querySelectorAll('.product-card[data-popup-nm-id="'+product.product_id+'"] .product-card__main');
+	var card = document.querySelectorAll('.product-card[data-nm-id="'+product.product_id+'"] .product-card__main');
 	if (!card || card.length == 0) return false;
 
 	var div = document.createElement("div");
@@ -720,7 +720,7 @@ function initCatalogItemTemplate(productId, target) {
 }*/
 
 function isDetailPage(pathname) {
-	var matches = pathname.replace(/^\//, '').match(/^catalog\/\d+/g)
+	var matches = pathname.replace(/^\//, '').match(/^catalog\/\d{2,}/g)
 	if (matches && matches.length > 0) {
 		var marketPapaProductId = matches[0].match(/\d+/)[0]
 		return marketPapaProductId;
@@ -731,7 +731,12 @@ function isDetailPage(pathname) {
 function isCatalogPage(pathname) {
 	var matches = pathname.replace(/^\//, '').match(/^catalog\/([A-Za-z]|0)/g);
 	var promotions = pathname.replace(/^\//, '').match(/^promotions\/[A-Za-z]/g);
-	return matches && matches.length > 0 || promotions && promotions.length > 0;
+	var brands = pathname.replace(/^\//, '').match(/^brands\/[A-Za-z]/g);
+	var seller = pathname.replace(/^\//, '').match(/^seller\/[0-9]/g);
+	return matches && matches.length
+		|| promotions && promotions.length
+		|| brands && brands.length
+		|| seller && seller.length;
 }
 
 var catalogIds = [];
@@ -739,7 +744,7 @@ var catalogIds = [];
 function getCatalogIds(pathname) {
 	catalogIds = [];
 	var id, idMatch;
-	document.querySelectorAll('#catalog-content .product-card').forEach(function(item) {
+	document.querySelectorAll('.catalog-page .product-card').forEach(function(item) {
 		id = item.getAttribute('id');
 		if (id) {
 			idMatch = id.match(/\d+/g);
@@ -761,14 +766,14 @@ function initBrandTemplate() {
 	if (!brandData)
 		return false;
 
-	var target = document.querySelectorAll('.brand-logo');
+	var target = document.querySelectorAll('.catalog-page__filters-block');
 	if (!target || target.length == 0)
 		return false;
 
 	target = target[0];
 
 	var brand_tpl = `
-		<div id="marketpapa-brand-widget" class="marketpapa-brand-widget">
+		<div id="marketpapa-brand-widget" class="marketpapa-brand-widget" style="width:300px;">
 			<div class="marketpapa-wrapper marketpapa-brand-wrapper">
 				<div class="marketpapa-header">
 					<img src="${ logoSrc }" alt="" />
@@ -811,27 +816,15 @@ function initBrandTemplate() {
 			</div>
 		</div>
 	`;
-	/*
-	function marketPapaTemplate() {
-		if (!mpData) return '';
-		return `
-		<div class="marketpapa-wrapper">
-			<div class="marketpapa-header">
-				<img id="marketpapa-logo`+preview+`" src="" />
-			</div>
-			<div id="marketpapa-content`+preview+`" class="marketpapa-content">
-				<div id="marketpapa-chart-filter-wrapper`+preview+`">` + mpFilterTemplate() + `</div>
-				<div class="marketpapa-chart" id="marketpapa-chart`+preview+`"></div>
-				<div class="marketpapa-buttons">
-					<button class="marketpapa-button marketpapa-period-filter" data-period="month">30 дней</button>
-					<button class="marketpapa-button marketpapa-period-filter marketpapa-button-outline" data-period="week">7 дней</button>
-					<button class="marketpapa-button marketpapa-period-filter marketpapa-button-outline" data-period="twoWeeks">14 дней</button>
-				</div>
-			</div>
-			` + mpFooterTemplate() + `
-		</div>
-	*/
-	target.innerHTML = target.outerHTML + brand_tpl;
+
+	var tpl_exists = document.getElementById('marketpapa-brand-widget');
+	if (tpl_exists) {
+		tpl_exists.remove();
+	}
+
+	let prepend_tpl = document.createElement("div");
+	prepend_tpl.innerHTML = brand_tpl;
+	target.prepend(prepend_tpl);
 }
 
 function getBrandData(brand_id, brand_name) {
@@ -879,38 +872,6 @@ function isBrandPage(pathname) {
 	})
 	.catch(error => {
 	});
-
-	/*var repeats = 0;
-	var brandInterval = setInterval(function() {
-		var brandLogo = document.querySelectorAll('.brand-logo img');
-
-		if (brandLogo && brandLogo.length > 0) {
-			clearInterval(brandInterval);
-
-			_brandName = brandLogo[0].getAttribute('alt');
-			if (_brandName.trim() != '') {
-				// brand detected
-				brandName = _brandName.trim();
-
-				if (isAuth()) {
-					if (isAccessTokenExists()) {
-						// get data and render
-						getBrandData(brandName);
-					} else {
-						// getToken(function() { getData(target, id); });
-
-						// get data and render
-					}
-				} else {
-					// render login
-				}
-			}
-		}
-
-		repeats += 1;
-		if (repeats == 5) clearInterval(brandInterval);
-
-	}, 1000);*/
 }
 
 /*
@@ -928,14 +889,14 @@ function initSupplierTemplate() {
 	if (!supplierData)
 		return false;
 
-	var target = document.querySelectorAll('.sidemenu-overflow');
+	var target = document.querySelectorAll('.catalog-page__filters-block');
 	if (!target || target.length == 0)
 		return false;
 
 	target = target[0];
 
 	var supplier_tpl = `
-		<div id="marketpapa-supplier-widget" class="marketpapa-brand-widget">
+		<div id="marketpapa-supplier-widget" class="marketpapa-brand-widget" style="width:300px;">
 			<div class="marketpapa-wrapper marketpapa-brand-wrapper">
 				<div class="marketpapa-header">
 					<img src="${ logoSrc }" alt="" />
@@ -978,7 +939,15 @@ function initSupplierTemplate() {
 			</div>
 		</div>
 	`;
-	target.innerHTML = supplier_tpl + target.outerHTML;
+
+	var tpl_exists = document.getElementById('marketpapa-supplier-widget');
+	if (tpl_exists) {
+		tpl_exists.remove();
+	}
+
+	let prepend_tpl = document.createElement("div");
+	prepend_tpl.innerHTML = supplier_tpl;
+	target.prepend(prepend_tpl);
 }
 
 function getSupplierData(supplier_id, supplier_name) {
