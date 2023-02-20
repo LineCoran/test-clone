@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "Market Papa",
-	"version": "1.3",
+	"version": "1.3.1",
 
 	"action": {
 		"default_icon": "16.png"
@@ -25,6 +25,9 @@
 				"js/switch/index.js",
 				"js/sizeModal/columns.js",
 				"js/sizeModal/table.js",
+
+				"js/catalog/template.js",
+				"js/catalog/index.js",
 
 				"marketpapa.js"
 			]

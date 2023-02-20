@@ -31,3 +31,17 @@ function mp_dateToString(d, format) {
     if (format === 'DD.MM.YYYY HH:II') return day + '.' + month + '.' + year + ' ' + hours + ':' + minutes
     return date
 }
+
+function mp_getCookie(name) {
+	const value = '; ' + document.cookie;
+	const parts = value.split('; ' + name + '=');
+	var cookie = '';
+	if (parts.length === 2)
+		cookie = parts.pop().split(';').shift();
+	return cookie;
+}
+
+function mp_isAuth() {
+	var _token = mp_getCookie('mpapa_plugin_token');
+	return _token.trim() != '' && _token.trim() != 'false' ? _token : false;
+}
