@@ -1,0 +1,109 @@
+<html lang="ru">
+    <head>
+        <meta charset="utf-8" />
+        <title></title>
+        <link rel="stylesheet" href="styles.css" />
+        <link rel="stylesheet" href="../icons/styles.css" />
+    </head>
+    <body>
+        <div id="root" class="marketpapa-catalog-widget">
+            
+            <div class="marketpapa-catalog-item">
+                <div class="marketpapa-catalog-head">
+                    <img src="../../images/logo.svg" class="marketpapa-catalog-logo" />
+                </div>
+                <div class="marketpapa-catalog-item-info">
+                    <div class="marketpapa-catalog-scheme-wrapper">
+                        <div class="marketpapa-catalog-scheme">
+                            Схема сотрудничества
+                        </div>
+                    </div>
+                    <div class="marketpapa-catalog-info">
+                        <div class="marketpapa-catalog-info-left">
+                            <div class="marketpapa-catalog-info-line">
+                                Выручка
+                                <i class="marketpapa-icon marketpapa-icon-order"></i>
+                                <i class="marketpapa-icon marketpapa-icon-chevron-down"></i>
+                                <div class="marketpapa-catalog-dropdown">
+                                    <div class="marketpapa-catalog-info-left">
+                                        <div class="marketpapa-catalog-info-line">
+                                            Выручка
+                                            <i class="marketpapa-icon marketpapa-icon-sale"></i>
+                                        </div>
+                                        <div class="marketpapa-catalog-info-line">
+                                            Выручка
+                                            <i class="marketpapa-icon marketpapa-icon-order"></i>
+                                        </div>
+                                    </div>
+                                    <div class="marketpapa-catalog-info-right">
+                                        <div class="marketpapa-catalog-info-line">
+                                            27 443 838 ₽
+                                        </div>
+                                        <div class="marketpapa-catalog-info-line">
+                                            27 443 838 ₽
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="marketpapa-catalog-info-line">
+                                Продажи
+                                <i class="marketpapa-icon marketpapa-icon-sale"></i>
+                                <i class="marketpapa-icon marketpapa-icon-chevron-down"></i>
+                                <div class="marketpapa-catalog-dropdown">
+                                    <div class="marketpapa-catalog-info-left">
+                                        <div class="marketpapa-catalog-info-line">
+                                            Продажи
+                                        </div>
+                                        <div class="marketpapa-catalog-info-line">
+                                            Заказы
+                                        </div>
+                                        <div class="marketpapa-catalog-info-line">
+                                            % выкупа
+                                        </div>
+                                    </div>
+                                    <div class="marketpapa-catalog-info-right">
+                                        <div class="marketpapa-catalog-info-line">
+                                            3 838 шт
+                                        </div>
+                                        <div class="marketpapa-catalog-info-line">
+                                            838 шт
+                                        </div>
+                                        <div class="marketpapa-catalog-info-line">
+                                            20%
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="marketpapa-catalog-info-line">
+                                Остаток
+                            </div>
+                        </div>
+                        <div class="marketpapa-catalog-info-right">
+                            <div class="marketpapa-catalog-info-line">
+                                456 ₽
+                            </div>
+                            <div class="marketpapa-catalog-info-line">
+                                3 456 ₽
+                            </div>
+                            <div class="marketpapa-catalog-info-line">
+                                123 456 ₽
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <script src="../utils.js"></script>
+        <script src="template.js"></script>
+        <script>
+            var data = {
+                amount_real_sales_fbo: 123456,
+                real_sales_fbo: 3456,
+                last_qty_fbo: 12
+            }
+            // var tpl = mp_initCatalogTemplate('../../images/logo.svg', data);
+            // document.getElementById('root').innerHTML = tpl;
+        </script>
+    </body>
+</html>

@@ -1,0 +1,17 @@
+.marketpapa-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-size: 16px 16px;
+    background-position: 0 0;
+    background-repeat: no-repeat;
+}
+.marketpapa-icon-info {
+    background-size: 16px auto;
+}
+.marketpapa-icon-info:hover {
+    background-position: 0 -16px;
+}
+.marketpapa-icon-chevron-down {}
+.marketpapa-icon-sale {}
+.marketpapa-icon-order {}

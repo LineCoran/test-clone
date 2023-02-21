@@ -39,7 +39,7 @@ function mp_sizeModal() {
 	sizeModal.innerHTML = `
 		<div class="marketpapa-widget-modal-content">
 			<div class="marketpapa-widget-modal-header">
-				<img class="mwm-header-image" src="${ logoSrc }" alt="" />
+				<img class="mwm-header-image" src="${ window.marketPapaWidget.images.logoSrc }" alt="" />
 				<span class="marketpapa-widget-modal-close"></span>
 			</div>
 			<div class="marketpapa-widget-modal-body">
@@ -74,14 +74,15 @@ function mp_sizeModal() {
             right: {
                 key: 'fbs',
                 text: 'FBS'
-            }
+            },
+            styles: 'margin-top:20px;'
         };
         sizeSwitchWrap.append(mp_switchTemplate("mp-size-switch", switchOptions, sizeFboChange));
     }
 
 	var close = document.getElementsByClassName("marketpapa-widget-modal-close");
 
-	if (close.length) close[0].setAttribute('style', `background-image: url(`+ imgCloseModal +`);`);
+	if (close.length) close[0].setAttribute('style', `background-image: url(`+ window.marketPapaWidget.images.imgCloseModal +`);`);
 
 	window.onclick = function(event) {
 		if (event.target == sizeModal || event.target == close[0]) {

@@ -1,3 +1,6 @@
+window.marketPapaWidget = {
+	images: {}
+};
 
 function toRuble(price) {
     if (!price) price = '0'
@@ -15,47 +18,6 @@ function formatNumber(number) {
     number += ''
     if (number.trim() === '') return 0
     return number.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
-}
-
-var assets = {};
-var logoSrc, bgSrc, imgCloseModal, loader;
-
-function loadAssets() {
-	logoSrc = chrome.runtime.getURL("images/logo.svg");
-	bgSrc = chrome.runtime.getURL("images/bg.png");
-	imgCloseModal = chrome.runtime.getURL("images/modal-close.png");
-	loader = chrome.runtime.getURL("images/loader-sm-primary.svg");
-	
-	assets = {
-		logoSrc,
-		bgSrc,
-		imgCloseModal,
-		loader
-	};
-
-	var fa = document.createElement('style');
-    fa.type = 'text/css';
-    fa.textContent = `
-	    @font-face {
-			font-family: 'Montserrat';
-		    src: url("` + chrome.runtime.getURL('fonts/montserrat/Montserrat-SemiBold.ttf') + `");
-		    font-weight: 600;
-		    font-style: normal;
-		}
-		@font-face {
-		    font-family: 'Montserrat';
-		    src: url("` + chrome.runtime.getURL('fonts/montserrat/Montserrat-Medium.ttf') + `");
-		    font-weight: 500;
-		    font-style: normal;
-		}
-		@font-face {
-		    font-family: 'Montserrat';
-		    src: url("` + chrome.runtime.getURL('fonts/montserrat/Montserrat-Regular.ttf') + `");
-		    font-weight: 400;
-		    font-style: normal;
-		}
-    `;
-	document.head.appendChild(fa);
 }
 
 function setBrandSupplierLink(product_id) {
@@ -336,7 +298,7 @@ function initTemplate(productId, preview, target, mpData) {
 	});
 
 
-	document.getElementById("marketpapa-logo" + preview).setAttribute('src', logoSrc);
+	document.getElementById("marketpapa-logo" + preview).setAttribute('src', window.marketPapaWidget.images.logoSrc);
 
 	renderChart();
 
@@ -517,7 +479,7 @@ var sizeLinkListener = function(event) {
 	var sizeTable = document.getElementById('mp-size-table');
 	if (sizeTable) {
 		sizeTable.classList.add('mp-loader');
-		sizeTable.setAttribute('style', `background-image: url(`+ loader +`);`);
+		sizeTable.setAttribute('style', `background-image: url(`+ window.marketPapaWidget.images.loader +`);`);
 		sizeTable.innerHTML = '';
 	}
 
@@ -615,10 +577,10 @@ function initPopupMP(productId) {
 		if (popupTarget.length > 0 && !_popupTarget) {
 			popupTarget = popupTarget[0];
 			initPopupEmptyTemplate(productId, popupTarget);
-			document.getElementById("marketpapa-logo-" + productId).setAttribute('src', logoSrc);
+			document.getElementById("marketpapa-logo-" + productId).setAttribute('src', window.marketPapaWidget.images.logoSrc);
 			_wrapper = document.getElementsByClassName('marketpapa-wrapper');
 			if (_wrapper && _wrapper.length > 0) {
-				_wrapper[0].setAttribute('style', `background-image: url(`+ bgSrc +`);`);
+				_wrapper[0].setAttribute('style', `background-image: url(`+ window.marketPapaWidget.images.bgSrc +`);`);
 			}
 
 			checkAccess(popupTarget, popupProductId);
@@ -651,10 +613,10 @@ function initMP(productId) {
 		if (productTarget.length > 0 && !_productTarget) {
 			productTarget = productTarget[0];
 			initEmptyTemplate(productId, productTarget);
-			document.getElementById("marketpapa-logo-" + productId).setAttribute('src', logoSrc);
+			document.getElementById("marketpapa-logo-" + productId).setAttribute('src', window.marketPapaWidget.images.logoSrc);
 			_wrapper = document.getElementsByClassName('marketpapa-wrapper');
 			if (_wrapper && _wrapper.length > 0) {
-				_wrapper[0].setAttribute('style', `background-image: url(`+ bgSrc +`);`);
+				_wrapper[0].setAttribute('style', `background-image: url(`+ window.marketPapaWidget.images.bgSrc +`);`);
 			}
 
 			checkAccess(productTarget, pageProductId);
@@ -727,7 +689,7 @@ function initBrandTemplate() {
 		<div id="marketpapa-brand-widget" class="marketpapa-brand-widget" style="width:300px;">
 			<div class="marketpapa-wrapper marketpapa-brand-wrapper">
 				<div class="marketpapa-header">
-					<img src="${ logoSrc }" alt="" />
+					<img src="${ window.marketPapaWidget.images.logoSrc }" alt="" />
 				</div>
 				<div class="marketpapa-content">
 					<div class="marketpapa-brand-data-row">
@@ -849,7 +811,7 @@ function initSupplierTemplate() {
 		<div id="marketpapa-supplier-widget" class="marketpapa-brand-widget" style="width:300px;">
 			<div class="marketpapa-wrapper marketpapa-brand-wrapper">
 				<div class="marketpapa-header">
-					<img src="${ logoSrc }" alt="" />
+					<img src="${ window.marketPapaWidget.images.logoSrc }" alt="" />
 				</div>
 				<div class="marketpapa-content">
 					<div class="marketpapa-brand-data-row">
@@ -949,7 +911,7 @@ function isSupplierPage(pathname) {
  * END SUPPLIER
  */
 
-loadAssets();
+mp_loadAssets();
 
 mp_sizeModal();
 
@@ -1012,7 +974,7 @@ function checkCatalogIds() {
 	}, 1000);
 }
 */
-mp_checkCatalogInterval(assets);
+mp_checkCatalogInterval(window.marketPapaWidget.images);
 
 var checkLocationInterval = setInterval(function() {
 

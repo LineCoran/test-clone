@@ -7,6 +7,9 @@ function mp_checkCatalogInterval(assets) {
         div.setAttribute("id", "marketpapa-catalog-widget-" + product.product_id);
         div.setAttribute("class", "marketpapa-catalog-widget");
         div.innerHTML = mp_initCatalogTemplate(assets.logoSrc, product);
+        div.onclick = function(e) {
+            e.preventDefault();
+        };
     
         var targetDiv = document.getElementById('marketpapa-catalog-widget-' + product.product_id);
         if (targetDiv && targetDiv.length > 0) {

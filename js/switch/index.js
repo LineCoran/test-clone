@@ -4,7 +4,9 @@ function mp_switchTemplate(id, options, callback) {
 	var div = document.createElement("div");
 	div.setAttribute("id", id);
 	div.setAttribute("class", "mp-switch");
-	div.setAttribute("style", "margin-top:20px;");
+	if (options.styles) {
+		div.setAttribute("style", options.styles);
+	}
 	div.setAttribute("data-active", "left");
 	div.innerHTML = `
         <div class="mp-switch-text mp-switch-text-left">${ options.left.text }</div>

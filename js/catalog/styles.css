@@ -1,0 +1,74 @@
+.marketpapa-catalog-widget {
+    cursor: default;
+	font-family: 'Montserrat', sans-serif;
+	line-height: 20px;
+	font-weight: 500;
+	font-size: 14px;
+	color: #222;
+	background: #F8F6FA;
+	border-radius: 4px;
+	padding: 12px;
+	margin-top: 15px;
+    box-shadow: 5px 5px 10px rgba(166, 171, 189, 0.5);
+}
+.marketpapa-catalog-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.marketpapa-catalog-scheme-wrapper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.marketpapa-catalog-scheme {
+    font-weight: 600;
+    margin-right: 20px;
+}
+.marketpapa-catalog-item {
+}
+.marketpapa-catalog-info {
+    display: flex;
+}
+.marketpapa-catalog-info-left i {
+    margin-left: 5px;
+}
+.marketpapa-catalog-info-left > .marketpapa-catalog-info-line {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+.marketpapa-catalog-dropdown {
+    background: #FFFFFF;
+    box-shadow: 5px 5px 10px rgba(166, 171, 189, 0.5);
+    border-radius: 4px;
+    padding: 12px 16px;
+}
+.marketpapa-catalog-info-left .marketpapa-catalog-dropdown {
+    display: none;
+    position: absolute;
+    bottom: 99%;
+    left: 0;
+}
+.marketpapa-catalog-info-left > .marketpapa-catalog-info-line:hover .marketpapa-catalog-dropdown {
+    display: flex;
+}
+.marketpapa-catalog-info-right {
+    font-weight: 600;
+    padding-left: 30px;
+    text-align: right;
+}
+.marketpapa-catalog-item-info {
+	margin-top: 5px;
+	padding-top: 10px;
+    border-top: 1px solid #CAACE9;
+}
+.marketpapa-catalog-info-line {
+    white-space: nowrap;
+}
+.marketpapa-catalog-info-line + .marketpapa-catalog-info-line {
+	margin-top: 10px;
+}
+.marketpapa-catalog-logo {
+	height: 30px;
+}

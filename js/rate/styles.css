@@ -1,0 +1,23 @@
+.marketpapa-rate-line {
+    font-family: 'Montserrat';
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 17px;
+    background: #6000C0;
+    border-radius: 4px;
+    padding: 2px 6px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+}
+.marketpapa-rate-line .marketpapa-icon {
+    margin-left: 5px;
+}
+.marketpapa-rate-text {
+    white-space: nowrap;
+}
+.marketpapa-rate-value {
+    font-weight: 600;
+    white-space: nowrap;
+    margin-left: 10px;
+}
